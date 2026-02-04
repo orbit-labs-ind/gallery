@@ -1,0 +1,114 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.layout-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+  gap: 0.25rem;
+}
+
+.sidebar-nav a {
+  padding: 0.6rem 1.25rem;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.sidebar-nav a:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-nav a.active {
+  opacity: 1;
+  background-color: rgba(100, 108, 255, 0.2);
+  font-weight: 500;
+}
+
+.layout-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.layout-header {
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.layout-header-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.layout-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow: auto;
+}
+
+.layout-footer {
+  flex-shrink: 0;
+  padding: 0.75rem 1.5rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+@media (prefers-color-scheme: light) {
+  .layout-sidebar {
+    background-color: rgba(0, 0, 0, 0.04);
+    border-right-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .sidebar-nav a:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .sidebar-nav a.active {
+    background-color: rgba(100, 108, 255, 0.15);
+  }
+
+  .layout-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .layout-footer {
+    background-color: rgba(0, 0, 0, 0.04);
+    border-top-color: rgba(0, 0, 0, 0.08);
+  }
+}
+
+@media (max-width: 640px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .layout-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    padding: 0.5rem 1rem;
+  }
+}
