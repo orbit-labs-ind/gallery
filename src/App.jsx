@@ -6,9 +6,12 @@ import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import './App.css'
+import '@mantine/core/styles.css';
+import { MantineProvider } from '@mantine/core';
 
 function App() {
   return (
+    <MantineProvider>
     <Routes>
       <Route path="/" element={<LandingLayout />}>
         <Route index element={<LandingPage />} />
@@ -25,6 +28,7 @@ function App() {
         />
       </Route>
     </Routes>
+    </MantineProvider>
   )
 }
 
