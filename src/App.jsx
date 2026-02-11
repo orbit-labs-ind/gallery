@@ -8,26 +8,37 @@ import DashboardPage from './pages/DashboardPage'
 import './App.css'
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
+import ImgPage from './pages/imgPage'
 
 function App() {
   return (
     <MantineProvider>
-    <Routes>
-      <Route path="/" element={<LandingLayout />}>
-        <Route index element={<LandingPage />} />
-        <Route path="login" element={<LoginPage />} />
-      </Route>
-      <Route element={<Layout />}>
-        <Route
-          path="dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-      </Route>
-    </Routes>
+      <Routes>
+        <Route path="/" element={<LandingLayout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="login" element={<LoginPage />} />
+        </Route>
+
+        <Route element={<Layout />}>
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="images"
+            element={
+              <ProtectedRoute>
+                <ImgPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+      </Routes>
     </MantineProvider>
   )
 }
