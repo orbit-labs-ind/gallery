@@ -57,6 +57,7 @@ function DashboardPage() {
       </Stack>
 
       {/* CATEGORY FILTER */}
+
       <Center mt={30}>
         <Group>
           {categories.map((item, index) => (
@@ -78,7 +79,7 @@ function DashboardPage() {
         </Group>
       </Center>
 
-      {/* ===== IMAGE SLIDER ===== */}
+      {/* IMAGE SLIDER - mentine ui */}
       <Carousel
         mt={50}
         mb={60}
@@ -114,34 +115,14 @@ function DashboardPage() {
               radius="lg"
               fit="cover"
               style={{ cursor: 'pointer' }}
-              onClick={() => navigate('/images')}
+              onClick={() => navigate(`/images/${index}`)}
             />
           </Carousel.Slide>
         ))}
       </Carousel>
 
-      {/* ===== DASHBOARD ACTIONS ===== */}
-      <Center mt={50}>
-        <Group>
-          <Button color="dark" onClick={() => dispatch(logout())}>
-            Sign out
-          </Button>
-
-          <Link to="/">
-            <Flex
-              align="center"
-              px={12}
-              py={8}
-              bg="#00000080"
-              gap={6}
-              style={{ borderRadius: 8 }}
-            >
-              <IoHome color="white" />
-              <Text c="white">Home</Text>
-            </Flex>
-          </Link>
-        </Group>
-      </Center>
+      
+      
     </Container>
   );
 }

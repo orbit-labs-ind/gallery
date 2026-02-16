@@ -32,7 +32,7 @@ function App() {
           {/* adding imgPage.jsx file router */}
           
           <Route
-            path="images"
+            path={"images/:id"}
             element={
               <ProtectedRoute>
                 <ImgPage />
