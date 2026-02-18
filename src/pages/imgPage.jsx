@@ -1,81 +1,207 @@
-import { Container, Image, Box } from "@mantine/core";
-import { useEffect, useState } from "react";
-
+import { Dropzone } from "@mantine/dropzone";
+import {
+  IconUpload,
+  IconPhoto,
+  IconX,
+  IconCheck,
+} from "@tabler/icons-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {
+  Container,
+  Title,
+  Text,
+  Box,
+  Image,
+  Card,
+  Group,
+  Progress,
+  rem,
+} from "@mantine/core";
 
 function ImgPage() {
-  const [images, setImages] = useState([]);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const album = location.state?.album;
 
-  useEffect(() => {
-    const sizeTypes = ["small", "wide", "tall", "big"];
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadComplete, setUploadComplete] = useState(false);
 
-    const randomImages = Array.from({ length: 14 }).map(() => {
-      const size = sizeTypes[Math.floor(Math.random() * sizeTypes.length)];
+  //  Bento Grid Image Data
+  const images = [
+    {
+      src: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800",
+      size: "wide",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800",
+      size: "big",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=800",
+      size: "small",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800",
+      size: "tall",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=800",
+      size: "small",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+      size: "wide",
+    },
+  ];
 
-      // Adjust image aspect ratio based on type
-      
-      let width = 600;
-      let height = 600;
+  if (!album) {
+    return (
+      <Container py={40}>
+        <Title order={3}>No Album Selected</Title>
+        <Text mt="md" style={{ cursor: "pointer" }} onClick={() => navigate("/")}>
+          Go back
+        </Text>
+      </Container>
+    );
+  }
 
-      if (size === "wide") height = 400;
-      if (size === "tall") height = 700;
-      if (size === "big") height = 900;
+  const handleUpload = (acceptedFiles) => {
+    setFiles(acceptedFiles);
+    setUploading(true);
+    setUploadComplete(false);
 
-      return {
-        src: `https://picsum.photos/${width}/${height}?random=${Math.random()}`,
-        size,
-      };    
-    });
-
-    setImages(randomImages);
-  }, []);
-
-  const getSpan = (size) => {
-    switch (size) {
-      case "wide":
-        return { gridColumn: "span 2", gridRow: "span 1" };
-      case "tall":
-        return { gridColumn: "span 1", gridRow: "span 2" };
-      case "big":
-        return { gridColumn: "span 2", gridRow: "span 2" };
-      default:
-        return { gridColumn: "span 1", gridRow: "span 1" };
-    }
+    setTimeout(() => {
+      setUploading(false);
+      setUploadComplete(true);
+    }, 2000);
   };
 
   return (
-    <Container size="xl" py={40}>
+    <Container size="lg" py={40}>
+      
+      {/* Album Header */}
+      <Title order={2}>{album.title}</Title>
+
+      <Text c="dimmed" mt={5}>
+        {album.is_accessible ? "Public Album" : "Private Album"}
+      </Text>
+
+      <Text c="dimmed" mb={30}>
+        Tags: {album.tags.join(", ")}
+      </Text>
+
+      {/* Bento Grid */}
       <Box
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
           gridAutoRows: "200px",
           gap: "16px",
-          gridAutoFlow: "dense", // fills empty spaces
         }}
       >
-        {images.map((item, index) => (
-          <Box
-            key={index}
+        {/* Upload Card */}
+        <Card
+          shadow="sm"
+          padding="md"
+          radius="md"
+          withBorder
+          style={{
+            minHeight: 220,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Dropzone
+            onDrop={handleUpload}
+            maxSize={5 * 1024 ** 2}
+            accept={["image/png", "image/jpeg", "image/webp"]}
             style={{
-              ...getSpan(item.size),
-              borderRadius: "16px",
-              overflow: "hidden",
+              width: "100%",
+              height: "100%",
+              border: "2px dashed #d1d5db",
+              borderRadius: rem(8),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
+            <Group justify="center" style={{ pointerEvents: "none" }}>
+              <Dropzone.Accept>
+                <IconUpload size={40} color="green" />
+              </Dropzone.Accept>
+
+              <Dropzone.Reject>
+                <IconX size={40} color="red" />
+              </Dropzone.Reject>
+
+              <Dropzone.Idle>
+                {uploadComplete ? (
+                  <IconCheck size={40} color="green" />
+                ) : (
+                  <IconPhoto size={40} />
+                )}
+              </Dropzone.Idle>
+
+              <div>
+                {uploading ? (
+                  <>
+                    <Text size="sm" ta="center">
+                      Uploading...
+                    </Text>
+                    <Progress mt="sm" value={70} animated />
+                  </>
+                ) : uploadComplete ? (
+                  <Text size="sm" ta="center" c="green">
+                    Upload Complete
+                  </Text>
+                ) : (
+                  <>
+                    <Text size="sm" ta="center">
+                      Drag images here or click to upload
+                    </Text>
+                    <Text size="xs" c="dimmed" ta="center">
+                      PNG, JPG, WEBP (max 5MB)
+                    </Text>
+                  </>
+                )}
+              </div>
+            </Group>
+          </Dropzone>
+        </Card>
+
+        {/* Image Cards  */}
+
+        {images.map((item, index) => {
+          let gridStyle = {};
+
+          if (item.size === "wide") {
+            gridStyle = { gridColumn: "span 2" };
+          } else if (item.size === "tall") {
+            gridStyle = { gridRow: "span 2" };
+          } else if (item.size === "big") {
+            gridStyle = { gridColumn: "span 2", gridRow: "span 2" };
+          }
+
+          return (
             <Image
+              key={index}
               src={item.src}
-              fit="cover"
+              radius="md"
               style={{
                 width: "100%",
                 height: "100%",
+                objectFit: "cover",
+                ...gridStyle,
               }}
             />
-          </Box>
-        ))}
+          );
+        })}
       </Box>
     </Container>
   );
-  
 }
 
 export default ImgPage;
