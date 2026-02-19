@@ -1,58 +1,52 @@
-
 import { Navigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { useEffect } from 'react'
-import { logout, checkTokenExpiry } from '../store/slices/authSlice'
+import { useEffect, useRef } from 'react'
+import { logout, checkInactivity, updateLastActivity } from '../store/slices/authSlice'
 import { TOKEN_KEY } from '../store/slices/authSlice'
 
+const ACTIVITY_THROTTLE_MS = 60 * 1000 // update lastActivity at most every 1 min
+
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, isReady } = useSelector((state) => state.auth) 
+  const { isAuthenticated, isReady } = useSelector((state) => state.auth)
   const location = useLocation()
   const dispatch = useDispatch()
+  const lastActivityUpdate = useRef(0)
 
   useEffect(() => {
-    // EVENT LISTENER 1: Check token expiry every 10 seconds
-    const expiryCheckInterval = setInterval(() => {
-      dispatch(checkTokenExpiry())
-    }, 10000) // Check every 10 seconds
+    dispatch(checkInactivity())
+  }, [dispatch])
 
-    //EVENT LISTENER 2: Listen for localStorage changes (cross-tab logout)
-    const handleStorageChange = (e) => {
-      // When token is removed in another tab, logout in this tab too
-      if (e.key === TOKEN_KEY && e.newValue === null) {
-        console.log('Token removed in another tab - logging out')
-        dispatch(logout())
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(checkInactivity())
+    }, 60 * 1000) // check inactivity every 1 min
+
+    const handleActivity = () => {
+      const now = Date.now()
+      if (now - lastActivityUpdate.current >= ACTIVITY_THROTTLE_MS) {
+        lastActivityUpdate.current = now
+        dispatch(updateLastActivity())
       }
     }
 
-    // EVENT LISTENER 3: Cleanup before page unload (optional)
-    const handleBeforeUnload = () => {
-      console.log('Page closing - token still in localStorage')
-      // Note: We don't remove token here because user might just refresh
-      // Token will expire after 2 minutes anyway
-    }
+    window.addEventListener('click', handleActivity)
+    window.addEventListener('keydown', handleActivity)
+    window.addEventListener('mousemove', handleActivity)
 
-    // Add event listeners
+    const handleStorageChange = (e) => {
+      if (e.key === TOKEN_KEY && e.newValue === null) {
+        dispatch(logout())
+      }
+    }
     window.addEventListener('storage', handleStorageChange)
-    window.addEventListener('beforeunload', handleBeforeUnload)
 
-    console.log(' Event listeners attached:')
-    console.log('  - Token expiry checker (every 10s)')
-    console.log('  - Storage event (cross-tab sync)')
-    console.log('  - Before unload event')
-
-    // Cleanup function
     return () => {
-      clearInterval(expiryCheckInterval)
+      clearInterval(interval)
+      window.removeEventListener('click', handleActivity)
+      window.removeEventListener('keydown', handleActivity)
+      window.removeEventListener('mousemove', handleActivity)
       window.removeEventListener('storage', handleStorageChange)
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-      console.log('🧹 Event listeners cleaned up')
     }
-  }, [dispatch])
-
-  // Check authentication status when component mounts
-  useEffect(() => {
-    dispatch(checkTokenExpiry())
   }, [dispatch])
 
   if (!isReady) {

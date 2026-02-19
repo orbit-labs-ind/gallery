@@ -5,39 +5,38 @@ import { Button, Flex, Text } from '@mantine/core'
 import { IoHome } from 'react-icons/io5'
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { EXPIRY_KEY } from '../store/slices/authSlice'
+import { LAST_ACTIVITY_KEY, INACTIVITY_MS } from '../store/slices/authSlice'
+
+function formatTimeLeft(ms) {
+  if (ms <= 0) return 'Expired (logout soon)'
+  const totalSeconds = Math.floor(ms / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const secs = totalSeconds % 60
+  if (hours > 0) return `${hours}h ${minutes}m ${secs}s`
+  if (minutes > 0) return `${minutes}m ${secs}s`
+  return `${secs}s`
+}
 
 function DashboardPage() {
   const dispatch = useDispatch()
   const { email } = useSelector((state) => state.auth)
   const [timeRemaining, setTimeRemaining] = useState(null)
 
-  // Calculate remaining time until token expires
   useEffect(() => {
     const updateTimer = () => {
-      const expiryTime = localStorage.getItem(EXPIRY_KEY)
-      if (!expiryTime) {
+      const lastStr = localStorage.getItem(LAST_ACTIVITY_KEY)
+      if (!lastStr) {
         setTimeRemaining(null)
         return
       }
-
-      const now = Date.now()
-      const expiry = parseInt(expiryTime, 10)
-      const remaining = expiry - now
-
-      if (remaining <= 0) {
-        setTimeRemaining('Expired')
-      } else {
-        const seconds = Math.floor(remaining / 1000)
-        const minutes = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        setTimeRemaining(`${minutes}:${secs.toString().padStart(2, '0')}`)
-      }
+      const last = parseInt(lastStr, 10)
+      const expiryAt = last + INACTIVITY_MS
+      const remaining = expiryAt - Date.now()
+      setTimeRemaining(formatTimeLeft(remaining))
     }
-
     updateTimer()
     const interval = setInterval(updateTimer, 1000)
-
     return () => clearInterval(interval)
   }, [])
 
@@ -65,28 +64,28 @@ function DashboardPage() {
         </p>
       </div>
 
-      {/* Token expiry timer */}
+      {/* Inactivity session timer */}
       {timeRemaining && (
-        <div style={{ 
-          background: timeRemaining === 'Expired' ? '#ffebee' : '#e3f2fd', 
-          padding: '1rem', 
-          borderRadius: '8px', 
+        <div style={{
+          background: timeRemaining.startsWith('Expired') ? '#ffebee' : '#e3f2fd',
+          padding: '1rem',
+          borderRadius: '8px',
           marginBottom: '1rem',
-          border: timeRemaining === 'Expired' ? '2px solid #f44336' : '2px solid #2196F3'
+          border: timeRemaining.startsWith('Expired') ? '2px solid #f44336' : '2px solid #2196F3'
         }}>
           <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
-            <strong>Token expires in:</strong>
+            <strong>Session (1 day inactivity):</strong>
           </p>
-          <p style={{ 
-            margin: '0.5rem 0 0 0', 
-            fontSize: '24px', 
+          <p style={{
+            margin: '0.5rem 0 0 0',
+            fontSize: '24px',
             fontWeight: 'bold',
-            color: timeRemaining === 'Expired' ? '#f44336' : '#2196F3'
+            color: timeRemaining.startsWith('Expired') ? '#f44336' : '#2196F3'
           }}>
-           {timeRemaining}
+            {timeRemaining}
           </p>
           <p style={{ margin: '0.5rem 0 0 0', fontSize: '12px', color: '#666' }}>
-            (2 minute expiration for testing)
+            Logs out after 1 day with no activity. Activity (clicks, keys, movement) resets the timer.
           </p>
         </div>
       )}
@@ -126,25 +125,20 @@ function DashboardPage() {
       </Link>
 
       {/* Developer info */}
-      <div style={{ 
-        marginTop: '2rem', 
-        padding: '1rem', 
-        background: '#f5f5f5', 
+      <div style={{
+        marginTop: '2rem',
+        padding: '1rem',
+        background: '#f5f5f5',
         borderRadius: '8px',
         fontSize: '12px',
         color: '#666'
       }}>
-        <p><strong>JWT Auth Info:</strong></p>
+        <p><strong>Session info</strong></p>
         <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-          <li>✅ Token stored in localStorage</li>
-          <li>✅ Email stored in localStorage</li>
-          <li>✅ Auto-logout after 2 minutes</li>
-          <li>✅ Cross-tab logout sync enabled</li>
-          <li>✅ Event listeners active</li>
+          <li>Token stored in localStorage; renewed on each API call (sliding 1 day)</li>
+          <li>Session ends after 1 day of no activity (clicks, keys, mouse)</li>
+          <li>Cross-tab logout sync enabled</li>
         </ul>
-        <p style={{ marginTop: '0.5rem', fontSize: '11px', fontStyle: 'italic' }}>
-          💡 Tip: Open this page in another tab and logout - both tabs will sync!
-        </p>
       </div>
     </div>
   )

@@ -1,8 +1,8 @@
 
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom' 
-import { useDispatch } from 'react-redux' 
-import { login } from '../store/slices/authSlice'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { loginUser, registerUser, clearLoginError } from '../store/slices/authSlice'
 import './SignupPage.css'
 
 function SignupPage() {
@@ -12,32 +12,39 @@ function SignupPage() {
   const [isSignIn, setIsSignIn] = useState(true)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { loginLoading, loginError, isAuthenticated } = useSelector((state) => state.auth)
 
-  const handleSubmit = (e) => {
-    e.preventDefault() 
+  useEffect(() => {
+    if (isAuthenticated) navigate('/dashboard', { replace: true })
+  }, [isAuthenticated, navigate])
 
-    if (!email.trim()) { 
+  useEffect(() => {
+    dispatch(clearLoginError())
+  }, [isSignIn, dispatch])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!email.trim()) {
       alert('Please enter email')
       return
     }
-
     if (!password.trim()) {
       alert('Please enter password')
       return
     }
-
-    // ✅ Pass email to login action to create JWT token
-    dispatch(login({ email: email.trim() }))
-    navigate('/dashboard', { replace: true })
+    if (password.length < 6) {
+      alert('Password must be at least 6 characters')
+      return
+    }
+    if (isSignIn) {
+      await dispatch(loginUser({ email: email.trim(), password }))
+    } else {
+      await dispatch(registerUser({ email: email.trim(), password }))
+    }
   }
 
   const handleSocialLogin = (provider) => {
-    console.log('Login with:', provider)
-    
-    // For social login, use a demo email (in production, you'd get this from OAuth)
-    const demoEmail = `${provider}user@example.com`
-    dispatch(login({ email: demoEmail }))
-    navigate('/dashboard', { replace: true })
+    console.log('Login with:', provider, '(not implemented – use Sign In with email/password)')
   }
 
   const toggleSignIn = () => {
@@ -147,8 +154,13 @@ function SignupPage() {
               </div>
             </div>
 
-            <button type="submit" className="continue-button">
-              Continue
+            {loginError && (
+              <p className="login-error" style={{ color: '#c62828', marginBottom: '1rem', fontSize: '14px' }}>
+                {loginError}
+              </p>
+            )}
+            <button type="submit" className="continue-button" disabled={loginLoading}>
+              {loginLoading ? 'Please wait…' : 'Continue'}
             </button>
           </form>
 

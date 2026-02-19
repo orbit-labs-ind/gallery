@@ -1,190 +1,167 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { apiFetch, API_BASE } from '../../api/client'
 
-import { createSlice } from '@reduxjs/toolkit'
+export const TOKEN_KEY = 'gallery_token'
+export const EMAIL_KEY = 'gallery_email'
+export const LAST_ACTIVITY_KEY = 'gallery_last_activity'
 
-// LocalStorage keys
-const TOKEN_KEY = 'gallery_token'
-const EMAIL_KEY = 'gallery_email'
-const EXPIRY_KEY = 'gallery_token_expiry'
+export const INACTIVITY_MS = 24 * 60 * 60 * 1000 // 1 day
 
-// Token expiration time: 2 minutes (for testing)
-const TOKEN_EXPIRY_MS = 2 * 60 * 1000 // 2 minutes in milliseconds
-
-
-//Craeted JWT token without signature
-const createJWT = (email) => {
-  const header = {
-    alg: 'none', // No signature algorithm 
-    typ: 'JWT'
-  }
-
-  const now = Date.now() // now time in ms
-  const expiryTime = now + TOKEN_EXPIRY_MS 
-
-  const payload = {
-    email: email,
-    iat: Math.floor(now / 1000), // Issued at (in seconds)
-    exp: Math.floor(expiryTime / 1000) // Expiry (in seconds)
-  }
-
-  // Base64 encode (URL safe)
-  const base64Header = btoa(JSON.stringify(header))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-
-  const base64Payload = btoa(JSON.stringify(payload))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-
-  // JWT without signature: header.payload.
-  return `${base64Header}.${base64Payload}.`
+function getStoredLastActivity() {
+  if (typeof window === 'undefined') return null
+  const s = localStorage.getItem(LAST_ACTIVITY_KEY)
+  return s ? parseInt(s, 10) : null
 }
 
-
-// Validate JWT token
-// Returns: { valid: boolean, email: string | null, expired: boolean }
-
-const validateJWT = (token) => {
-  try {
-    if (!token || typeof token !== 'string') {
-      return { valid: false, email: null, expired: false }
-    }
-
-    const parts = token.split('.')
-    if (parts.length !== 3) {
-      return { valid: false, email: null, expired: false }
-    }
-
-    // Decode payload
-    let base64Payload = parts[1]
-    // Add padding if needed
-    base64Payload = base64Payload.replace(/-/g, '+').replace(/_/g, '/')
-    while (base64Payload.length % 4) {
-      base64Payload += '='
-    }
-
-    const payload = JSON.parse(atob(base64Payload))
-
-    // Check if token is expired
-    const now = Math.floor(Date.now() / 1000)
-    const isExpired = payload.exp < now
-
-    return {
-      valid: true,
-      email: payload.email || null,
-      expired: isExpired
-    }
-  } catch (error) {
-    console.error('JWT validation error:', error)
-    return { valid: false, email: null, expired: false }
-  }
+function isInactiveTooLong() {
+  const last = getStoredLastActivity()
+  if (last == null) return true
+  return Date.now() - last > INACTIVITY_MS
 }
-
-
-// Check if user has valid authentication
 
 const getInitialAuth = () => {
   if (typeof window === 'undefined') {
     return { isAuthenticated: false, email: null }
   }
-
   const token = localStorage.getItem(TOKEN_KEY)
   const email = localStorage.getItem(EMAIL_KEY)
-
-  if (!token || !email) {
-    return { isAuthenticated: false, email: null }
-  }
-
-  const validation = validateJWT(token)
-
-  // If token is invalid or expired, clear everything
-  if (!validation.valid || validation.expired) {
+  if (!token || !email) return { isAuthenticated: false, email: null }
+  if (isInactiveTooLong()) {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(EMAIL_KEY)
-    localStorage.removeItem(EXPIRY_KEY)
+    localStorage.removeItem(LAST_ACTIVITY_KEY)
     return { isAuthenticated: false, email: null }
   }
-
-  return { isAuthenticated: true, email: validation.email }
+  return { isAuthenticated: true, email }
 }
 
-const initialAuthState = getInitialAuth()
-
+const initial = getInitialAuth()
 const initialState = {
-  isAuthenticated: initialAuthState.isAuthenticated,
-  email: initialAuthState.email,
+  isAuthenticated: initial.isAuthenticated,
+  email: initial.email,
   isReady: true,
+  loginLoading: false,
+  loginError: null,
 }
+
+export const loginUser = createAsyncThunk(
+  'auth/login',
+  async ({ email, password }, { rejectWithValue }) => {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) return rejectWithValue(data.error || 'Login failed')
+    return data
+  }
+)
+
+export const registerUser = createAsyncThunk(
+  'auth/register',
+  async ({ email, password }, { rejectWithValue }) => {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) return rejectWithValue(data.error || 'Registration failed')
+    return data
+  }
+)
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login(state, action) {
-      const email = action.payload?.email || 'user@example.com'
-      
-      // Create JWT token
-      const token = createJWT(email)
-      const expiryTime = Date.now() + TOKEN_EXPIRY_MS 
-
-      // Store in localStorage
-      localStorage.setItem(TOKEN_KEY, token)
-      localStorage.setItem(EMAIL_KEY, email)
-      localStorage.setItem(EXPIRY_KEY, expiryTime.toString())
-
-      // Update state
-      state.isAuthenticated = true
-      state.email = email
-
-      console.log('✅ Login successful')
-      console.log('📧 Email:', email)
-      console.log('🎫 Token:', token)
-      console.log('⏰ Expires in: 2 minutes')
-    },
-
-    logout(state) {
-      // Clear localStorage
-      localStorage.removeItem(TOKEN_KEY)
-      localStorage.removeItem(EMAIL_KEY)
-      localStorage.removeItem(EXPIRY_KEY)
-
-      // Update state
-      state.isAuthenticated = false
-      state.email = null
-
-      console.log('👋 Logout successful - Token removed')
-    },
-
-    checkTokenExpiry(state) {
-      const token = localStorage.getItem(TOKEN_KEY)
-      const expiryTime = localStorage.getItem(EXPIRY_KEY)
-
-      if (!token || !expiryTime) {
-        state.isAuthenticated = false
-        state.email = null
-        return
+    setAuth(state, action) {
+      const { token, user } = action.payload
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(TOKEN_KEY, token)
+        localStorage.setItem(EMAIL_KEY, user?.email || '')
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()))
       }
-
-      const now = Date.now()
-      const expiry = parseInt(expiryTime, 10)
-
-      if (now >= expiry) {
-        // Token expired - auto logout
+      state.isAuthenticated = true
+      state.email = user?.email || null
+      state.loginError = null
+    },
+    logout(state) {
+      if (typeof window !== 'undefined') {
         localStorage.removeItem(TOKEN_KEY)
         localStorage.removeItem(EMAIL_KEY)
-        localStorage.removeItem(EXPIRY_KEY)
-
+        localStorage.removeItem(LAST_ACTIVITY_KEY)
+      }
+      state.isAuthenticated = false
+      state.email = null
+      state.loginError = null
+    },
+    updateLastActivity(state) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()))
+      }
+    },
+    checkInactivity(state) {
+      if (typeof window === 'undefined') return
+      const token = localStorage.getItem(TOKEN_KEY)
+      if (!token) return
+      if (isInactiveTooLong()) {
+        localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(EMAIL_KEY)
+        localStorage.removeItem(LAST_ACTIVITY_KEY)
         state.isAuthenticated = false
         state.email = null
-
-        console.log('⏰ Token expired - Auto logout')
       }
-    }
+    },
+    clearLoginError(state) {
+      state.loginError = null
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.loginLoading = true
+        state.loginError = null
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loginLoading = false
+        state.loginError = null
+        const { token, user } = action.payload
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(TOKEN_KEY, token)
+          localStorage.setItem(EMAIL_KEY, user?.email || '')
+          localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()))
+        }
+        state.isAuthenticated = true
+        state.email = user?.email || null
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loginLoading = false
+        state.loginError = action.payload || 'Login failed'
+      })
+      .addCase(registerUser.pending, (state) => {
+        state.loginLoading = true
+        state.loginError = null
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loginLoading = false
+        state.loginError = null
+        const { token, user } = action.payload
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(TOKEN_KEY, token)
+          localStorage.setItem(EMAIL_KEY, user?.email || '')
+          localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()))
+        }
+        state.isAuthenticated = true
+        state.email = user?.email || null
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loginLoading = false
+        state.loginError = action.payload || 'Registration failed'
+      })
   },
 })
 
-export const { login, logout, checkTokenExpiry } = authSlice.actions
+export const { logout, updateLastActivity, checkInactivity, clearLoginError } = authSlice.actions
 export default authSlice.reducer
-
-export { TOKEN_KEY, EMAIL_KEY, EXPIRY_KEY, validateJWT }
