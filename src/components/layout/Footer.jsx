@@ -2,15 +2,17 @@ import { Container, Group, ActionIcon, Text, Anchor } from '@mantine/core';
 import { IoLogoTwitter, IoLogoYoutube, IoLogoInstagram, IoImage } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useMediaQuery } from '@mantine/hooks';
 
 function Footer() {
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const themeStyles = {
-    bg: '#1c244d', 
+    bg: '#1c244d',
     border: '1px solid rgba(255,255,255,0.1)',
     text: 'white',
-    dimmed: 'gray.5',
+    dimmed: '#cbd5e1',
     iconColor: 'gray',
     logoColor: '#646cff'
   };
@@ -20,84 +22,89 @@ function Footer() {
       borderTop: themeStyles.border,
       backgroundColor: themeStyles.bg,
       paddingTop: '2rem',
-      paddingBottom: '2rem',
-      marginTop: 'auto',
-      transition: 'background-color 0.3s ease'
+      paddingBottom: isMobile ? '6rem' : '2rem',
+      marginTop: 'auto'
     }}>
       <Container size="lg">
         <div style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: isMobile ? 'center' : 'space-between',
+          flexDirection: isMobile ? 'column' : 'row',
           alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem'
+          gap: '1.5rem'
         }}>
-          
-          {/* Left Side: Logo & Brand */}
+
+          {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <IoImage size={24} color={themeStyles.logoColor} />
-            <Text fw={700} size="lg" style={{ color: themeStyles.text }}>
-              Gallery 
+            <Text fw={700} size="lg" c={themeStyles.text}>
+              Gallery
             </Text>
           </div>
 
-          {/* Center: Navigation Links */}
+          {/* Navigation */}
           <Group gap="lg">
             <Link to="/" style={{ textDecoration: 'none' }}>
-              <Text c={themeStyles.dimmed} size="sm" style={{ cursor: 'pointer' }}>Home</Text>
+              <Text c={themeStyles.dimmed} size="sm">Home</Text>
             </Link>
-            
-            {/* Login link only shows if NOT authenticated */}
+
             {!isAuthenticated && (
               <Link to="/login" style={{ textDecoration: 'none' }}>
-                <Text c={themeStyles.dimmed} size="sm" style={{ cursor: 'pointer' }}>Login</Text>
+                <Text c={themeStyles.dimmed} size="sm">Login</Text>
               </Link>
             )}
-            
+
             <Anchor href="#" c={themeStyles.dimmed} size="sm" underline="never">
               Privacy
             </Anchor>
+
             <Anchor href="#" c={themeStyles.dimmed} size="sm" underline="never">
               Terms
             </Anchor>
           </Group>
 
-          {/* Right Side: Social Icons */}
-          <Group gap="xs" justify="flex-end" wrap="nowrap">
-            <ActionIcon 
-              size="lg" 
-              color={themeStyles.iconColor} 
-              variant="subtle" 
-              component="a" 
-              href="https://twitter.com" 
+          {/* Social Icons */}
+          <Group gap="xs">
+
+            {/* Twitter */}
+            <ActionIcon
+              size="lg"
+              variant="subtle"
+              component="a"
+              href="https://twitter.com"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <IoLogoTwitter size={18} />
             </ActionIcon>
-            <ActionIcon 
-              size="lg" 
-              color={themeStyles.iconColor} 
-              variant="subtle" 
-              component="a" 
-              href="https://youtube.com" 
+
+            {/* YouTube */}
+            <ActionIcon
+              size="lg"
+              variant="subtle"
+              component="a"
+              href="https://www.youtube.com"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <IoLogoYoutube size={18} />
             </ActionIcon>
-            <ActionIcon 
-              size="lg" 
-              color={themeStyles.iconColor} 
-              variant="subtle" 
-              component="a" 
-              href="https://instagram.com" 
+
+            {/* Instagram */}
+            <ActionIcon
+              size="lg"
+              variant="subtle"
+              component="a"
+              href="https://www.instagram.com"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <IoLogoInstagram size={18} />
             </ActionIcon>
+
           </Group>
         </div>
 
-        {/* Bottom Copyright */}
         <Text c={themeStyles.dimmed} size="xs" ta="center" mt="xl">
           © {new Date().getFullYear()} Orbit Gallery. All rights reserved.
         </Text>
