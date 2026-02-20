@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom' 
 import { useDispatch } from 'react-redux' 
@@ -26,7 +25,7 @@ function SignupPage() {
       return
     }
 
-    // ✅ Pass email to login action to create JWT token
+    //Pass email to login action to create JWT token
     dispatch(login({ email: email.trim() }))
     navigate('/dashboard', { replace: true })
   }
@@ -192,7 +191,7 @@ function SignupPage() {
           </div>
 
           <p className="footer-text">
-            Join the millions of smart inv  stors who trust us to manage their finances. Log in
+            Join the millions of smart investors who trust us to manage their finances. Log in
             to access your personalized dashboard, track your portfolio performance, and
             make informed investment decisions.
           </p>
@@ -205,5 +204,5 @@ function SignupPage() {
     </div>
   )
 }
-
+  
 export default SignupPage

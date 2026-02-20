@@ -1,28 +1,45 @@
-
 import { useDispatch, useSelector } from 'react-redux'
-import { logout } from '../store/slices/authSlice'
-import { Button, Flex, Text } from '@mantine/core'
+import { logout, resetExpiry } from '../store/slices/authSlice'
+import { TOKEN_KEY, validateJWT } from '../store/slices/authSlice'
+import { Flex, Text } from '@mantine/core'
 import { IoHome } from 'react-icons/io5'
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { EXPIRY_KEY } from '../store/slices/authSlice'
 
 function DashboardPage() {
   const dispatch = useDispatch()
   const { email } = useSelector((state) => state.auth)
   const [timeRemaining, setTimeRemaining] = useState(null)
 
-  // Calculate remaining time until token expires
+  //  Reset expiry when user navigates to dashboard (requirement #2)
+  useEffect(() => {
+    dispatch(resetExpiry())
+    console.log(' Dashboard mounted — expiry reset')
+  }, [dispatch])
+
+  // Calculate remaining time by reading exp directly from JWT inside gallery_token
   useEffect(() => {
     const updateTimer = () => {
-      const expiryTime = localStorage.getItem(EXPIRY_KEY)
-      if (!expiryTime) {
+      const token = localStorage.getItem(TOKEN_KEY)
+      if (!token) {
         setTimeRemaining(null)
         return
       }
 
+      const validation = validateJWT(token)
+      if (!validation.valid) {
+        setTimeRemaining(null)
+        return
+      }
+
+      // Parse exp from JWT payload (exp is in seconds)
+      const parts = token.split('.')
+      let base64Payload = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+      while (base64Payload.length % 4) base64Payload += '='
+      const payload = JSON.parse(atob(base64Payload))
+
       const now = Date.now()
-      const expiry = parseInt(expiryTime, 10)
+      const expiry = payload.exp * 1000 // convert seconds → ms
       const remaining = expiry - now
 
       if (remaining <= 0) {
@@ -48,12 +65,12 @@ function DashboardPage() {
   return (
     <div className='dashboard-page'>
       <h2>Dashboard</h2>
-      
+
       {/* Display user email */}
-      <div style={{ 
-        background: '#f0f0f0', 
-        padding: '1rem', 
-        borderRadius: '8px', 
+      <div style={{
+        background: '#f0f0f0',
+        padding: '1rem',
+        borderRadius: '8px',
         marginBottom: '1rem',
         border: '2px solid #4CAF50'
       }}>
@@ -65,28 +82,28 @@ function DashboardPage() {
         </p>
       </div>
 
-      {/* Token expiry timer */}
+      {/* Token expiry timer — reads from gallery_token JWT */}
       {timeRemaining && (
-        <div style={{ 
-          background: timeRemaining === 'Expired' ? '#ffebee' : '#e3f2fd', 
-          padding: '1rem', 
-          borderRadius: '8px', 
+        <div style={{
+          background: timeRemaining === 'Expired' ? '#ffebee' : '#e3f2fd',
+          padding: '1rem',
+          borderRadius: '8px',
           marginBottom: '1rem',
           border: timeRemaining === 'Expired' ? '2px solid #f44336' : '2px solid #2196F3'
         }}>
           <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
             <strong>Token expires in:</strong>
           </p>
-          <p style={{ 
-            margin: '0.5rem 0 0 0', 
-            fontSize: '24px', 
+          <p style={{
+            margin: '0.5rem 0 0 0',
+            fontSize: '24px',
             fontWeight: 'bold',
             color: timeRemaining === 'Expired' ? '#f44336' : '#2196F3'
           }}>
-           {timeRemaining}
+            ⏱ {timeRemaining}
           </p>
           <p style={{ margin: '0.5rem 0 0 0', fontSize: '12px', color: '#666' }}>
-            (2 minute expiration for testing)
+            (resets on activity — idles out after 2 minutes)
           </p>
         </div>
       )}
@@ -98,14 +115,14 @@ function DashboardPage() {
         type='button'
         onClick={handleLogout}
         className='dashboard-logout'
-        style={{ 
+        style={{
           padding: '0.75rem 1.5rem',
           fontSize: '16px',
           cursor: 'pointer',
           marginTop: '1rem'
         }}
       >
-        🚪 Sign out
+         Sign out
       </button>
 
       <Link to={'/'}>
@@ -126,24 +143,25 @@ function DashboardPage() {
       </Link>
 
       {/* Developer info */}
-      <div style={{ 
-        marginTop: '2rem', 
-        padding: '1rem', 
-        background: '#f5f5f5', 
+      <div style={{
+        marginTop: '2rem',
+        padding: '1rem',
+        background: '#f5f5f5',
         borderRadius: '8px',
         fontSize: '12px',
         color: '#666'
       }}>
         <p><strong>JWT Auth Info:</strong></p>
         <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-          <li>✅ Token stored in localStorage</li>
-          <li>✅ Email stored in localStorage</li>
-          <li>✅ Auto-logout after 2 minutes</li>
-          <li>✅ Cross-tab logout sync enabled</li>
-          <li>✅ Event listeners active</li>
+          <li>Token stored in localStorage as <code>gallery_token</code></li>
+          <li>Expiry stored inside <code>gallery_token</code> JWT (no separate key)</li>
+          <li>Auto-logout after 2 minutes of inactivity</li>
+          <li>Expiry resets on mouse/click/scroll/keypress activity</li>
+          <li>Expiry resets when navigating to dashboard</li>
+          <li>Cross-tab logout sync enabled</li>
         </ul>
         <p style={{ marginTop: '0.5rem', fontSize: '11px', fontStyle: 'italic' }}>
-          💡 Tip: Open this page in another tab and logout - both tabs will sync!
+           Tip: Stay active on the page and the timer keeps resetting. Go idle for 2 mins and you'll be logged out!
         </p>
       </div>
     </div>
