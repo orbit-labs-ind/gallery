@@ -1,0 +1,45 @@
+/* Landing page root – variables and full-width breakout */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+
+:root {
+  --bg: #080b12;
+  --surface: #0f1520;
+  --surface2: #161d2e;
+  --border: rgba(255, 255, 255, 0.07);
+  --text: #f0f4ff;
+  --muted: rgba(240, 244, 255, 0.45);
+  --accent: #ff6b9d;
+  --accent2: #ffd93d;
+  --accent3: #4d96ff;
+  --glow-pink: rgba(255, 107, 157, 0.35);
+  --glow-blue: rgba(77, 150, 255, 0.25);
+  --radius-card: 20px;
+  --font-display: 'Clash Display', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar on landing page to free space */
+.lp {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+body.lp-active {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: #080b12 !important;
+}
+
+body.lp-active::-webkit-scrollbar {
+  display: none;
+}

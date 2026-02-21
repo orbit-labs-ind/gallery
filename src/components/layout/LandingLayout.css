@@ -4,8 +4,60 @@
   min-height: 100vh;
 }
 
+.landing-layout.landing-layout--dark {
+  background: #080b12;
+}
+
 .landing-layout-content {
   flex: 1;
-  padding: 2rem 1.5rem;
+  padding: 0px;
   overflow: auto;
+}
+
+/* Landing page (index route) uses full width – no horizontal padding */
+.landing-layout-content--full {
+  padding-left: 0;
+  padding-right: 0;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism header (unauthenticated / landing) */
+.header-glass {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8, 11, 18, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.header-glass-inner {
+  width: 100%;
+}
+
+/* Glassmorphism footer (unauthenticated / landing) */
+.footer-glass {
+  background: rgba(8, 11, 18, 0.5) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  color: rgba(240, 244, 255, 0.9);
+}
+
+.footer-glass .mantine-Text,
+.footer-glass a {
+  color: inherit;
+}
+
+.footer-glass a:hover {
+  color: #f0f4ff !important;
+}
+
+.footer-glass .mantine-ActionIcon {
+  color: rgba(240, 244, 255, 0.8);
+}
+
+.footer-glass .mantine-ActionIcon:hover {
+  color: #f0f4ff;
 }

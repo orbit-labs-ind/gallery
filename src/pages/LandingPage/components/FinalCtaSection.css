@@ -1,0 +1,48 @@
+.lp-final {
+  padding: 100px 48px 120px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-final-blob {
+  position: absolute;
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(255, 107, 157, 0.12), transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.lp-final-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.lp-final-h2 {
+  font-size: clamp(38px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin-bottom: 24px;
+  font-family: "Clash Display", sans-serif;
+}
+
+.lp-final-p {
+  margin-bottom: 44px;
+}
+
+.lp-final .lp-btn-primary {
+  background: linear-gradient(135deg, var(--accent), #ff9a5c) !important;
+  color: #fff !important;
+}
+
+@media (max-width: 900px) {
+  .lp-final {
+    padding: 80px 24px;
+  }
+}
