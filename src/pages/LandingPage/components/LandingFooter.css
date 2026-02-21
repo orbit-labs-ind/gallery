@@ -1,0 +1,33 @@
+.lp-footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lp-footer-logo {
+  font-size: 18px;
+}
+
+.lp-logo-icon {
+  color: var(--accent);
+  font-size: 18px;
+  animation: spin-icon 8s linear infinite;
+}
+
+@keyframes spin-icon {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.lp-footer-copy {
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .lp-footer {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

@@ -1,0 +1,102 @@
+.lp-callout {
+  padding: 80px 48px 120px;
+  position: relative;
+}
+
+.lp-callout-blob {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(77, 150, 255, 0.1), transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.lp-callout-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.lp-callout-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-card) !important;
+  padding: 32px 28px !important;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-callout-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.lp-callout-card:hover::before {
+  opacity: 1;
+}
+
+.lp-callout-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
+.lp-callout-card-1:hover {
+  box-shadow: 0 24px 60px rgba(77, 150, 255, 0.15);
+  border-color: rgba(77, 150, 255, 0.3) !important;
+}
+.lp-callout-card-2:hover {
+  box-shadow: 0 24px 60px rgba(255, 107, 157, 0.15);
+  border-color: rgba(255, 107, 157, 0.3) !important;
+}
+.lp-callout-card-3:hover {
+  box-shadow: 0 24px 60px rgba(107, 203, 119, 0.15);
+  border-color: rgba(107, 203, 119, 0.3) !important;
+}
+.lp-callout-card-4:hover {
+  box-shadow: 0 24px 60px rgba(255, 217, 61, 0.15);
+  border-color: rgba(255, 217, 61, 0.3) !important;
+}
+
+.lp-callout-icon {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.lp-callout-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.lp-callout-card-text {
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .lp-callout {
+    padding: 60px 24px 80px;
+  }
+  .lp-callout-inner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .lp-callout-inner {
+    grid-template-columns: 1fr;
+  }
+}

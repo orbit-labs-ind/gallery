@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Variable.ttf") format("truetype");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.lp-hero {
+  position: relative;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  padding: 10px 40px;
+  overflow: hidden;
+}
+
+.lp-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.lp-blob-1 {
+  width: 500px;
+  height: 500px;
+  background: rgba(255, 107, 157, 0.15);
+  top: -100px;
+  left: -100px;
+  animation: blob-drift 4s ease-in-out infinite alternate;
+}
+.lp-blob-2 {
+  width: 400px;
+  height: 400px;
+  background: rgba(77, 150, 255, 0.12);
+  top: 200px;
+  right: 0;
+  animation: blob-drift 4s ease-in-out infinite alternate-reverse;
+}
+.lp-blob-3 {
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 217, 61, 0.08);
+  bottom: 0;
+  left: 40%;
+  animation: blob-drift 4s ease-in-out infinite alternate;
+}
+
+@keyframes blob-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, 40px) scale(1.1); }
+}
+
+.lp-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);
+}
+
+.lp-hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  isolation: isolate;
+}
+
+.lp-hero-left {
+  animation: fade-up 0.6s ease both;
+}
+
+.lp-pill {
+  margin-bottom: 28px;
+  animation: fade-up 0.6s ease both;
+  font-family: "DM Sans", sans-serif;
+}
+
+.lp-hero-h1 {
+  font-size: clamp(42px, 5vw, 68px);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  margin-bottom: 24px;
+  animation: fade-up 0.6s ease 0.1s both;
+  font-family: "Clash Display", sans-serif;
+}
+
+.lp-gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, #ff9a5c 50%, var(--accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lp-hero-p {
+  max-width: 480px;
+  margin-bottom: 36px;
+  animation: fade-up 0.6s ease 0.2s both;
+  font-family: "DM Sans", sans-serif;
+}
+
+.lp-hero-cta {
+  margin-bottom: 40px;
+  animation: fade-up 0.6s ease 0.3s both;
+}
+
+.lp-btn-primary {
+  font-family: "DM Sans", sans-serif;
+  background: linear-gradient(135deg, var(--accent), #ff9a5c) !important;
+  color: #fff !important;
+  box-shadow: 0 0 40px rgba(255, 107, 157, 0.4), 0 4px 24px rgba(255, 107, 157, 0.2);
+}
+.lp-btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 0 60px rgba(255, 107, 157, 0.5), 0 8px 32px rgba(255, 107, 157, 0.3);
+}
+
+.lp-btn-ghost {
+  font-family: "DM Sans", sans-serif;
+  color: var(--muted);
+}
+.lp-btn-ghost:hover {
+  color: var(--text);
+}
+
+.lp-hero-social-proof {
+  animation: fade-up 0.6s ease 0.4s both;
+}
+
+.lp-avatars .lp-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2.5px solid var(--bg);
+  margin-left: -10px;
+}
+.lp-avatar:first-child { margin-left: 0; }
+
+.lp-hero-right {
+  animation: fade-up 0.8s ease 0.2s both;
+  position: relative;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lp-scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.05em;
+  z-index: 2;
+}
+
+.lp-scroll-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: scroll-pulse 2s ease-in-out infinite;
+}
+.lp-proof-text{
+  font-family: "DM Sans", sans-serif;
+}
+
+@keyframes scroll-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+@media (max-width: 900px) {
+  .lp-hero {
+    padding: 10px 20px;
+  }
+  .lp-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+  .lp-hero-h1 { font-size: 42px; }
+  .lp-pill,
+  .lp-hero-cta,
+  .lp-hero-social-proof {
+    justify-content: center;
+  }
+  .lp-hero-p { margin-left: auto; margin-right: auto; margin-bottom: 36px; }
+  .lp-hero-right { min-height: 0; }
+}

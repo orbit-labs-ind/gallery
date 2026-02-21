@@ -17,14 +17,18 @@ function Footer() {
     logoColor: '#646cff'
   };
 
+  const footerClassName = !isAuthenticated ? 'footer-glass' : ''
   return (
-    <footer style={{
-      borderTop: themeStyles.border,
-      backgroundColor: themeStyles.bg,
-      paddingTop: '2rem',
-      paddingBottom: isMobile ? '6rem' : '2rem',
-      marginTop: 'auto'
-    }}>
+    <footer
+      className={footerClassName}
+      style={{
+        borderTop: themeStyles.border,
+        backgroundColor: isAuthenticated ? themeStyles.bg : 'transparent',
+        paddingTop: '2rem',
+        paddingBottom: isMobile ? '6rem' : '2rem',
+        marginTop: 'auto'
+      }}
+    >
       <Container size="lg">
         <div style={{
           display: 'flex',

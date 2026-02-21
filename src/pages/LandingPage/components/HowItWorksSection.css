@@ -1,0 +1,98 @@
+.lp-how {
+  padding: 120px 48px;
+}
+
+.lp-how-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.lp-section-label {
+  letter-spacing: 0.12em;
+  margin-bottom: 20px;
+}
+
+.lp-section-h2 {
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin-bottom: 72px;
+  font-family: "Clash Display", sans-serif;
+}
+
+.lp-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lp-step {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 32px;
+  align-items: flex-start;
+  position: relative;
+  padding-bottom: 48px;
+  opacity: 0;
+  animation: fade-up 0.7s ease calc(var(--i) * 0.12s) forwards;
+}
+
+.lp-step-num {
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.06);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  padding-top: 4px;
+  transition: color 0.3s;
+}
+
+.lp-step:hover .lp-step-num {
+  color: var(--accent);
+}
+
+.lp-step-content {
+  padding-top: 8px;
+}
+
+.lp-step-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+.lp-step-desc {
+  line-height: 1.65;
+}
+
+.lp-step-connector {
+  position: absolute;
+  left: 39px;
+  top: 60px;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--border), transparent);
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .lp-how {
+    padding: 80px 24px;
+  }
+}
+
+@media (max-width: 540px) {
+  .lp-step {
+    grid-template-columns: 60px 1fr;
+    gap: 20px;
+  }
+  .lp-step-num {
+    font-size: 36px;
+  }
+}
