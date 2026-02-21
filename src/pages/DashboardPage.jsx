@@ -1,171 +1,278 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { logout, resetExpiry } from '../store/slices/authSlice'
-import { TOKEN_KEY, validateJWT } from '../store/slices/authSlice'
-import { Flex, Text } from '@mantine/core'
-import { IoHome } from 'react-icons/io5'
-import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { Carousel } from "@mantine/carousel";
+import { useMediaQuery } from "@mantine/hooks";
+import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {
+  Container,
+  Title,
+  Text,
+  Card,
+  Image,
+  Badge,
+  Group,
+  SimpleGrid,
+  Button,
+} from "@mantine/core";
 
-function DashboardPage() {
-  const dispatch = useDispatch()
-  const { email } = useSelector((state) => state.auth)
-  const [timeRemaining, setTimeRemaining] = useState(null)
+const albums = [
+  {
+    id: "random_id_1",
+    title: "Family Tour",
+    created_at: "01-01-2026",
+    updated_at: "01-01-2026",
+    tags: ["family", "tour", "travel"],
+    cover_image:
+      "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+    is_accessible: true,
+  },
+  {
+    id: "random_id_2",
+    title: "Wedding",
+    created_at: "01-01-2026",
+    updated_at: "01-01-2026",
+    tags: ["wedding", "marriage", "ceremony"],
+    cover_image:
+      "https://images.unsplash.com/photo-1520854221256-17451cc331bf",
+    is_accessible: false,
+  },
+  {
+    id: "random_id_3",
+    title: "Birthday Party",
+    created_at: "01-01-2026",
+    updated_at: "01-01-2026",
+    tags: ["birthday", "celebration"],
+    cover_image:
+      "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3",
+    is_accessible: true,
+  },
+  {
+    id: "random_id_4",
+    title: "College Trip",
+    created_at: "01-01-2026",
+    updated_at: "01-01-2026",
+    tags: ["college", "friends", "trip"],
+    cover_image:
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+    is_accessible: true,
+  },
+  {
+    id: "random_id_5",
+    title: "Nature Camp",
+    created_at: "01-01-2026",
+    updated_at: "01-01-2026",
+    tags: ["nature", "camp", "adventure"],
+    cover_image:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+    is_accessible: false,
+  },
+];
 
-  //  Reset expiry when user navigates to dashboard (requirement #2)
-  useEffect(() => {
-    dispatch(resetExpiry())
-    console.log(' Dashboard mounted — expiry reset')
-  }, [dispatch])
+export default function DashboardPage() {
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
-  // Calculate remaining time by reading exp directly from JWT inside gallery_token
-  useEffect(() => {
-    const updateTimer = () => {
-      const token = localStorage.getItem(TOKEN_KEY)
-      if (!token) {
-        setTimeRemaining(null)
-        return
-      }
+  const [selectedTag, setSelectedTag] = useState(null);
+  const [showMore, setShowMore] = useState(false); // ✅ NEW
 
-      const validation = validateJWT(token)
-      if (!validation.valid) {
-        setTimeRemaining(null)
-        return
-      }
+  const handleClick = (album) => {
+    navigate("/images", { state: { album } });
+  };
 
-      // Parse exp from JWT payload (exp is in seconds)
-      const parts = token.split('.')
-      let base64Payload = parts[1].replace(/-/g, '+').replace(/_/g, '/')
-      while (base64Payload.length % 4) base64Payload += '='
-      const payload = JSON.parse(atob(base64Payload))
+ 
+  //  Get All Unique Tags
+  const allTags = [...new Set(albums.flatMap((album) => album.tags))];
 
-      const now = Date.now()
-      const expiry = payload.exp * 1000 // convert seconds → ms
-      const remaining = expiry - now
+  //  Show First 6 Tags Initially
+  const visibleTags = showMore ? allTags : allTags.slice(0, 6);
 
-      if (remaining <= 0) {
-        setTimeRemaining('Expired')
-      } else {
-        const seconds = Math.floor(remaining / 1000)
-        const minutes = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        setTimeRemaining(`${minutes}:${secs.toString().padStart(2, '0')}`)
-      }
-    }
+  //  Filter Albums Based On Tag
+  const filteredAlbums = selectedTag
+    ? albums.filter((album) => album.tags.includes(selectedTag))
+    : albums;
 
-    updateTimer()
-    const interval = setInterval(updateTimer, 1000)
+  const AlbumCard = ({ album }) => {
+    // Format date (optional but recommended)
+    const formatDate = (dateStr) => {
+      const date = new Date(dateStr.split("-").reverse().join("-"));
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    };
 
-    return () => clearInterval(interval)
-  }, [])
+    const getTimeAgo = (dateStr) => {
+      const date = new Date(dateStr.split("-").reverse().join("-"));
+      const now = new Date();
+      const diff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
 
-  const handleLogout = () => {
-    dispatch(logout())
-  }
+      if (diff < 1) return "Today";
+      if (diff < 30) return `${diff} Days ago`;
+      if (diff < 365) return `${Math.floor(diff / 30)} Months ago`;
+      return `${Math.floor(diff / 365)} Years ago`;
+    };
+
+    return (
+      <Card
+        shadow="md"
+        radius="lg"
+        padding={0}
+        withBorder={false}
+        style={{
+          cursor: "pointer",
+          overflow: "hidden",
+          position: "relative",
+        }}
+        onClick={() => handleClick(album)}
+      >
+        {/* Bg Image */}
+        <Image
+          src={album.cover_image}
+          height={300}
+          alt={album.title}
+          fit="cover"
+        />
+
+        {/* Gradient Overlay */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.1))",
+          }}
+        />
+
+        {/* Text Content */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 20,
+            left: 20,
+            right: 20,
+            color: "white",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+          }}
+        >
+          <div>
+            <Text fw={700} size="xl">
+              {album.title}
+            </Text>
+            <Text size="sm">
+              {formatDate(album.created_at)}
+            </Text>
+          </div>
+
+          <Text size="xs">
+            {getTimeAgo(album.created_at)}
+          </Text>
+        </div>
+      </Card>
+    );
+  };
+
 
   return (
-    <div className='dashboard-page'>
-      <h2>Dashboard</h2>
+    <Container size="lg" py="xl">
 
-      {/* Display user email */}
-      <div style={{
-        background: '#f0f0f0',
-        padding: '1rem',
-        borderRadius: '8px',
-        marginBottom: '1rem',
-        border: '2px solid #4CAF50'
-      }}>
-        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
-          <strong>Logged in as:</strong>
-        </p>
-        <p style={{ margin: '0.5rem 0 0 0', fontSize: '18px', fontWeight: 'bold' }}>
-          📧 {email || 'No email found'}
-        </p>
-      </div>
+      {/*  Header Section  */}
 
-      {/* Token expiry timer — reads from gallery_token JWT */}
-      {timeRemaining && (
-        <div style={{
-          background: timeRemaining === 'Expired' ? '#ffebee' : '#e3f2fd',
-          padding: '1rem',
-          borderRadius: '8px',
-          marginBottom: '1rem',
-          border: timeRemaining === 'Expired' ? '2px solid #f44336' : '2px solid #2196F3'
-        }}>
-          <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
-            <strong>Token expires in:</strong>
-          </p>
-          <p style={{
-            margin: '0.5rem 0 0 0',
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: timeRemaining === 'Expired' ? '#f44336' : '#2196F3'
-          }}>
-            ⏱ {timeRemaining}
-          </p>
-          <p style={{ margin: '0.5rem 0 0 0', fontSize: '12px', color: '#666' }}>
-            (resets on activity — idles out after 2 minutes)
-          </p>
-        </div>
+      <Text ta="center" c="dimmed" fw={600} size="sm" tt="uppercase" mb={5}>
+        Gallery
+      </Text>
+
+      <Title ta="center" order={1} fw={700} mb={10}>
+        My Visual Diary
+      </Title>
+
+      <Text ta="center" c="dimmed" size="md" mb={40}>
+        See the world through my lens: adventures in photos and videos
+      </Text>
+
+      {/*  Tag Filter Section  */}
+
+      <Group justify="center" mb={20} gap="sm" wrap="wrap">
+        <Button
+          radius="xl"
+          variant={selectedTag === null ? "filled" : "default"}
+          onClick={() => setSelectedTag(null)}
+        >
+          All
+        </Button>
+
+        {visibleTags.map((tag) => (
+          <Button
+            key={tag}
+            radius="xl"
+            variant={selectedTag === tag ? "filled" : "default"}
+            onClick={() => setSelectedTag(tag)}
+          >
+            {tag}
+          </Button>
+        ))}
+      </Group>
+
+      {/* View More Button */}
+
+      {allTags.length > 6 && (
+        <Group justify="center" mb={40}>
+          <Button
+            variant="subtle"
+            onClick={() => setShowMore(!showMore)}
+          >
+            {showMore ? "View Less ←" : "View More →"}
+          </Button>
+        </Group>
       )}
 
-      <p>You are signed in. This is your protected dashboard.</p>
+      {/* Desktop  Carousel */}
 
-      {/* Logout button */}
-      <button
-        type='button'
-        onClick={handleLogout}
-        className='dashboard-logout'
-        style={{
-          padding: '0.75rem 1.5rem',
-          fontSize: '16px',
-          cursor: 'pointer',
-          marginTop: '1rem'
-        }}
-      >
-         Sign out
-      </button>
-
-      <Link to={'/'}>
-        <Flex
-          align={'center'}
-          px={8}
-          py={6}
-          bg={'#00000070'}
-          gap={4}
-          maw={'fit-content'}
-          bdrs={6}
-          mt={12}
-          style={{ cursor: 'pointer' }}
+      {!isMobile && (
+        <Carousel
+          slideSize="33.333%"
+          slideGap="lg"
+          align="start"
+          height={320}
+          previousControlIcon={<IconArrowLeft size={16} />}
+          nextControlIcon={<IconArrowRight size={16} />}
+          styles={{
+            controls: {
+              bottom: -40,
+              top: "auto",
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              gap: 12,
+            },
+            control: {
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              backgroundColor: "#f5f5f5",
+            },
+          }}
         >
-          <IoHome style={{ color: 'white' }} />
-          <Text c='white'>Home</Text>
-        </Flex>
-      </Link>
+          {filteredAlbums.map((album) => (
+            <Carousel.Slide key={album.id}>
+              <AlbumCard album={album} />
+            </Carousel.Slide>
+          ))}
+        </Carousel>
+      )}
 
-      {/* Developer info */}
-      <div style={{
-        marginTop: '2rem',
-        padding: '1rem',
-        background: '#f5f5f5',
-        borderRadius: '8px',
-        fontSize: '12px',
-        color: '#666'
-      }}>
-        <p><strong>JWT Auth Info:</strong></p>
-        <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-          <li>Token stored in localStorage as <code>gallery_token</code></li>
-          <li>Expiry stored inside <code>gallery_token</code> JWT (no separate key)</li>
-          <li>Auto-logout after 2 minutes of inactivity</li>
-          <li>Expiry resets on mouse/click/scroll/keypress activity</li>
-          <li>Expiry resets when navigating to dashboard</li>
-          <li>Cross-tab logout sync enabled</li>
-        </ul>
-        <p style={{ marginTop: '0.5rem', fontSize: '11px', fontStyle: 'italic' }}>
-           Tip: Stay active on the page and the timer keeps resetting. Go idle for 2 mins and you'll be logged out!
-        </p>
-      </div>
-    </div>
-  )
+      {/* Mobile Grid */}
+
+      {isMobile && (
+        <SimpleGrid cols={1} spacing="lg">
+          {filteredAlbums.map((album) => (
+            <AlbumCard key={album.id} album={album} />
+          ))}
+        </SimpleGrid>
+      )}
+    </Container>
+  );
 }
 
-export default DashboardPage
