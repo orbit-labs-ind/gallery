@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
+import ImgPage from './pages/imgPage'
 import './App.css'
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
@@ -12,22 +13,34 @@ import { MantineProvider } from '@mantine/core';
 function App() {
   return (
     <MantineProvider>
-    <Routes>
-      <Route path="/" element={<LandingLayout />}>
-        <Route index element={<LandingPage />} />
-        <Route path="login" element={<LoginPage />} />
-      </Route>
-      <Route element={<Layout />}>
-        <Route
-          path="dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-      </Route>
-    </Routes>
+      <Routes>
+        <Route path="/" element={<LandingLayout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="login" element={<LoginPage />} />
+        </Route>
+
+        <Route element={<Layout />}>
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+ 
+          {/* adding imgPage.jsx file router */}
+          
+          <Route
+            path={"images/"}
+            element={
+              <ProtectedRoute>
+                <ImgPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+      </Routes>
     </MantineProvider>
   )
 }
