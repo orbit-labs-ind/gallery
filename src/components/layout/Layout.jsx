@@ -6,6 +6,7 @@ import Sidebar from './Sidebar'
 import Header from './Header'
 import Footer from './Footer'
 import './Layout.css'
+import { Box } from '@mantine/core'
 
 
 const ACTIVITY_THROTTLE_MS = 30 * 1000 // 30 seconds
@@ -65,7 +66,9 @@ function Layout() {
     <div className="layout">
       <Sidebar />
       <div className="layout-main">
-        <Header />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%' }}>
+          <Header />
+        </div>
         <main className="layout-content">
           <Outlet />
         </main>

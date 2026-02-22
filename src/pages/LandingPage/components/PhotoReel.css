@@ -1,0 +1,102 @@
+.lp-photo-reel {
+  position: relative;
+  width: 100%;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1400px;
+}
+
+.lp-photo-reel__stack {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  height: 460px;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.12s ease-out;
+}
+
+/* Scattered layout: all photos visible with minor overlap */
+.lp-photo-reel__card {
+  position: absolute;
+  width: 68%;
+  max-width: 280px;
+  z-index: var(--z, 1);
+  transform-style: preserve-3d;
+  transition: transform 0.25s ease, z-index 0.2s;
+}
+
+/* Card positions: spread further toward corners and edges */
+.lp-photo-reel__card:nth-child(1) { left: -2%;   top: -2%;   transform: translateZ(0)   rotate(-6deg); }
+.lp-photo-reel__card:nth-child(2) { right: -2%; top: -2%;   left: auto; transform: translateZ(0)   rotate(4deg); }
+.lp-photo-reel__card:nth-child(3) { left: 50%;  top: 50%;   transform: translate(-50%, -50%) translateZ(10px) rotate(-2deg); }
+.lp-photo-reel__card:nth-child(4) { left: -2%;  bottom: -4%; top: auto; transform: translateZ(0)   rotate(5deg); }
+.lp-photo-reel__card:nth-child(5) { right: -2%; bottom: -4%; left: auto; top: auto; transform: translateZ(0)   rotate(-4deg); }
+
+.lp-photo-reel__card:hover {
+  z-index: 50;
+  transform: translateZ(50px) scale(1.08);
+}
+.lp-photo-reel__card:nth-child(3):hover {
+  transform: translate(-50%, -50%) translateZ(60px) scale(1.08);
+}
+
+.lp-photo-reel__card-inner {
+  background: rgba(15, 21, 32, 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 18px !important;
+  overflow: hidden;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  padding: 14px 14px 18px !important;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.lp-photo-reel__card:hover .lp-photo-reel__card-inner {
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 40px rgba(255, 107, 157, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.lp-photo-reel__img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-photo-reel__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+}
+
+.lp-photo-reel__label {
+  font-family: "DM Sans", sans-serif;
+}
+
+@media (max-width: 900px) {
+  .lp-photo-reel {
+    min-height: 400px;
+  }
+  .lp-photo-reel__stack {
+    height: 380px;
+    max-width: 420px;
+  }
+  .lp-photo-reel__card {
+    max-width: 175px;
+  }
+}

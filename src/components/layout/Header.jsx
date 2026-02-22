@@ -35,15 +35,14 @@ function Header() {
   if (!isAuthenticated) {
     return (
       <>
-        <header style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: isMobile ? '0 1rem' : '0 2rem',
-          backgroundColor: '#7f8390',
-          color: 'white',
-          height: '72px'
-        }}>
+        <header className="header-glass">
+          <div className="header-glass-inner" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: isMobile ? '0 1rem' : '0 2rem',
+            height: '72px'
+          }}>
           <Group>
             {isMobile && (
               <Burger
@@ -53,33 +52,25 @@ function Header() {
               />
             )}
 
-            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
               <Group gap="xs">
-                <IoImage size={26} />
-                <Text fw={700}>Gallery</Text>
+                <IoImage size={26} color="white" />
+                <Text fw={700} c="white">Gallery</Text>
               </Group>
             </Link>
           </Group>
 
           {!isMobile && (
             <Group>
-              <Button
-                variant="subtle"
-                style={{ color: 'white' }}
-                onClick={() => navigate('/login')}
-              >
+              <Button variant="subtle" c="white" onClick={() => navigate('/login')}>
                 Sign In
               </Button>
-
-              <Button
-                variant="filled"
-                color="indigo"
-                onClick={() => navigate('/login')}
-              >
+              <Button variant="light" color="pink" onClick={() => navigate('/login')}>
                 Get Started
               </Button>
             </Group>
           )}
+          </div>
         </header>
 
         {isMobile && (

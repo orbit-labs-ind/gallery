@@ -1,0 +1,93 @@
+/* Full-screen spread: positioned by JS (left/top %), centered with translate -50% */
+.float-photo--fullscreen {
+  position: absolute;
+  width: clamp(220px, 20vw, 340px);
+  z-index: var(--z, 1);
+  pointer-events: none;
+}
+
+.float-photo-bob {
+  will-change: transform;
+}
+
+.float-photo--fullscreen .float-photo-inner {
+  transform: translateZ(calc(var(--z, 10) * 1px));
+  background: rgba(15, 21, 32, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 10px 10px 14px !important;
+}
+
+.float-photo--fullscreen .float-photo-inner:hover {
+  transform: scale(1.05) translateZ(60px);
+}
+
+.float-photo--fullscreen .float-photo-img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 180 / 130;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fallback when no scroll progress (e.g. SSR) – keep old layout in small stage */
+.float-photo--fallback {
+  position: absolute;
+  width: 200px;
+}
+
+.float-photo--fallback:nth-child(1) { top: 30px; left: 20px; }
+.float-photo--fallback:nth-child(2) { top: 80px; right: 20px; }
+.float-photo--fallback:nth-child(3) { bottom: 100px; left: 10px; }
+.float-photo--fallback:nth-child(4) { bottom: 30px; right: 40px; }
+.float-photo--fallback:nth-child(5) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+.float-photo-inner {
+  transition: transform 0.3s;
+}
+
+.float-photo-img {
+  width: 180px;
+  max-width: 100%;
+  height: 130px;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.float-photo--fullscreen .float-photo-img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 180 / 130;
+}
+
+.float-photo-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+}
+
+/* Mobile: smaller but still visible cards */
+@media (max-width: 900px) {
+  .float-photo--fullscreen {
+    width: clamp(160px, 28vw, 220px);
+  }
+}
+
+@media (max-width: 480px) {
+  .float-photo--fullscreen {
+    width: clamp(140px, 32vw, 200px);
+  }
+}
