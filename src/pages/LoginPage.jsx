@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom' 
 import { useDispatch } from 'react-redux' 
@@ -199,7 +200,12 @@ function SignupPage() {
       </div>
 
       <div className="signup-right">
-        <img src="/image.png" alt="sampla image" className="right-side-image" />
+        <img
+          src={isSignIn ? "/login_img.avif" : "/signup_img.jpg"}
+          alt={isSignIn ? "Login page image" : "Signup page image"}
+          className={`right-side-image image-transition`}
+          key={isSignIn ? "login" : "signup"}
+        />
       </div>
     </div>
   )
