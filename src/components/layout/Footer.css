@@ -1,0 +1,38 @@
+.footer-root {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  margin-top: auto;
+}
+
+.footer-auth {
+  background-color: #1c244d;
+}
+
+.footer-glass {
+  background: transparent;
+}
+
+.footer-mobile {
+  padding-bottom: 6rem;
+}
+
+.footer-logo-icon {
+  color: #646cff;
+}
+
+.footer-text-main {
+  color: white;
+}
+
+.footer-text-dim {
+  color: #cbd5e1;
+}
+
+.footer-link {
+  text-decoration: none;
+}
+
+.footer-icon {
+  color: gray;
+}

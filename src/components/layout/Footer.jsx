@@ -1,76 +1,58 @@
-import { Container, Group, ActionIcon, Text, Anchor } from '@mantine/core';
+import { Container, Group, ActionIcon, Text, Anchor, Flex } from '@mantine/core';
 import { IoLogoTwitter, IoLogoYoutube, IoLogoInstagram, IoImage } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useMediaQuery } from '@mantine/hooks';
+import './Footer.css';
 
 function Footer() {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const isMobile = useMediaQuery('(max-width: 768px)');
 
-  const themeStyles = {
-    bg: '#1c244d',
-    border: '1px solid rgba(255,255,255,0.1)',
-    text: 'white',
-    dimmed: '#cbd5e1',
-    iconColor: 'gray',
-    logoColor: '#646cff'
-  };
+  const footerClassName = `
+    footer-root
+    ${isAuthenticated ? 'footer-auth' : 'footer-glass'}
+    ${isMobile ? 'footer-mobile' : ''}
+  `;
 
-  const footerClassName = !isAuthenticated ? 'footer-glass' : ''
   return (
-    <footer
+    <Flex
       className={footerClassName}
-      style={{
-        borderTop: themeStyles.border,
-        backgroundColor: isAuthenticated ? themeStyles.bg : 'transparent',
-        paddingTop: '2rem',
-        paddingBottom: isMobile ? '6rem' : '2rem',
-        marginTop: 'auto'
-      }}
+      direction="column"
     >
       <Container size="lg">
-        <div style={{
-          display: 'flex',
-          justifyContent: isMobile ? 'center' : 'space-between',
-          flexDirection: isMobile ? 'column' : 'row',
-          alignItems: 'center',
-          gap: '1.5rem'
-        }}>
-
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <IoImage size={24} color={themeStyles.logoColor} />
-            <Text fw={700} size="lg" c={themeStyles.text}>
+        <Flex
+          justify={isMobile ? 'center' : 'space-between'}
+          direction={isMobile ? 'column' : 'row'}
+          align="center"
+          gap="1.5rem"
+        >
+          <Flex align="center" gap="8px">
+            <IoImage size={24} className="footer-logo-icon" />
+            <Text fw={700} size="lg" className="footer-text-main">
               Gallery
             </Text>
-          </div>
-
-          {/* Navigation */}
+          </Flex>
           <Group gap="lg">
-            <Link to="/" style={{ textDecoration: 'none' }}>
-              <Text c={themeStyles.dimmed} size="sm">Home</Text>
+            <Link to="/" className="footer-link">
+              <Text size="sm" className="footer-text-dim">Home</Text>
             </Link>
 
             {!isAuthenticated && (
-              <Link to="/login" style={{ textDecoration: 'none' }}>
-                <Text c={themeStyles.dimmed} size="sm">Login</Text>
+              <Link to="/login" className="footer-link">
+                <Text size="sm" className="footer-text-dim">Login</Text>
               </Link>
             )}
 
-            <Anchor href="#" c={themeStyles.dimmed} size="sm" underline="never">
+            <Anchor href="#" size="sm" underline="never" className="footer-text-dim">
               Privacy
             </Anchor>
 
-            <Anchor href="#" c={themeStyles.dimmed} size="sm" underline="never">
+            <Anchor href="#" size="sm" underline="never" className="footer-text-dim">
               Terms
             </Anchor>
           </Group>
-
-          {/* Social Icons */}
           <Group gap="xs">
-
-            {/* Twitter */}
             <ActionIcon
               size="lg"
               variant="subtle"
@@ -78,11 +60,11 @@ function Footer() {
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
+              className="footer-icon"
             >
               <IoLogoTwitter size={18} />
             </ActionIcon>
 
-            {/* YouTube */}
             <ActionIcon
               size="lg"
               variant="subtle"
@@ -90,11 +72,11 @@ function Footer() {
               href="https://www.youtube.com"
               target="_blank"
               rel="noopener noreferrer"
+              className="footer-icon"
             >
               <IoLogoYoutube size={18} />
             </ActionIcon>
 
-            {/* Instagram */}
             <ActionIcon
               size="lg"
               variant="subtle"
@@ -102,18 +84,18 @@ function Footer() {
               href="https://www.instagram.com"
               target="_blank"
               rel="noopener noreferrer"
+              className="footer-icon"
             >
               <IoLogoInstagram size={18} />
             </ActionIcon>
-
           </Group>
-        </div>
+        </Flex>
 
-        <Text c={themeStyles.dimmed} size="xs" ta="center" mt="xl">
+        <Text size="xs" ta="center" mt="xl" className="footer-text-dim">
           © {new Date().getFullYear()} Orbit Gallery. All rights reserved.
         </Text>
       </Container>
-    </footer>
+    </Flex>
   );
 }
 

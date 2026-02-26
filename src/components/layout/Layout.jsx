@@ -6,19 +6,16 @@ import Sidebar from './Sidebar'
 import Header from './Header'
 import Footer from './Footer'
 import './Layout.css'
-import { Box } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 
-
-const ACTIVITY_THROTTLE_MS = 30 * 1000 // 30 seconds
-
-// How often (ms) to check if the token has expired
-const EXPIRY_CHECK_INTERVAL_MS = 15 * 1000 // 15 seconds
+const ACTIVITY_THROTTLE_MS = 30 * 1000
+const EXPIRY_CHECK_INTERVAL_MS = 15 * 1000
 
 function Layout() {
   const dispatch = useDispatch()
-  const lastActivityRef = useRef(0)// 0 maen no activity yet
+  const lastActivityRef = useRef(0)
+  const isMobile = useMediaQuery('(max-width: 768px)') 
 
-  //Activity listeners — reset expiry on user interaction (throttled)
   useEffect(() => {
     const handleActivity = () => {
       const now = Date.now()
@@ -28,15 +25,14 @@ function Layout() {
       }
     }
 
-    // mouseover included so hovering over buttons/elements resets expiry
     const activityEvents = [
       'mousemove',
-      'mouseover', // hover on any element
+      'mouseover',
       'mousedown',
       'click',
-      'keydown', 
+      'keydown',
       'scroll',
-      'touchstart'  //toech start mean user using phone
+      'touchstart'
     ]
 
     activityEvents.forEach(event =>
@@ -50,9 +46,7 @@ function Layout() {
     }
   }, [dispatch])
 
-  // Expiry polling — checks every 15 seconds and auto-logouts if token expired
   useEffect(() => {
-    // Check immediately in case user was already expired before visiting dashboard
     dispatch(checkTokenExpiry())
 
     const interval = setInterval(() => {
@@ -64,14 +58,17 @@ function Layout() {
 
   return (
     <div className="layout">
-      <Sidebar />
+      {!isMobile && <Sidebar />}
+
       <div className="layout-main">
         <div style={{ height: '80px', minHeight: '80px', width: '100%' }}>
           <Header />
         </div>
+
         <main className="layout-content">
           <Outlet />
         </main>
+
         <Footer />
       </div>
     </div>

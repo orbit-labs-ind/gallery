@@ -1,0 +1,32 @@
+.header-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.header-inner {
+  padding: 0 2rem;
+  height: 72px;
+  width: 100%;
+}
+.header-auth-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 0 2rem;
+  background-color: white;
+  border-bottom: 1px solid #e0e0e0;
+  height: 64px;
+}
+.rotate {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+@media (max-width: 768px) {
+  .header-inner {
+    padding: 0 1rem;
+  }
+
+  .header-auth-wrapper {
+    padding: 0 1rem;
+  }
+}

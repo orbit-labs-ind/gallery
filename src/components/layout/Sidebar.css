@@ -1,0 +1,34 @@
+.sidebar-desktop {
+  width: 260px;
+  min-height: 100vh;
+  background-color: #f9fafb;
+  border-right: 1px solid #e0e0e0;
+  padding: 1.5rem 1rem;
+}
+
+.sidebar-mobile {
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.sidebar-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #4b5563;
+  font-weight: 400;
+  transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background-color: #eef2ff;
+}
+
+.sidebar-link-active {
+  background-color: #e0e7ff;
+  color: #4338ca;
+  font-weight: 600;
+}
