@@ -79,7 +79,7 @@ const getInitialAuth = () => {
   if (typeof window === 'undefined') {
     return { isAuthenticated: false, email: null }
   }
-
+  
   // Clean up legacy key left from older versions
   localStorage.removeItem('gallery_token_expiry')
 
