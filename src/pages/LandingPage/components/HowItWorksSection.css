@@ -36,12 +36,13 @@
   padding-bottom: 48px;
   opacity: 0;
   animation: fade-up 0.7s ease calc(var(--i) * 0.12s) forwards;
+  color: var(--accent);
 }
 
 .lp-step-num {
   font-size: 48px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.06);
+  color: var(--accent2);
   line-height: 1;
   letter-spacing: -0.03em;
   padding-top: 4px;
@@ -73,7 +74,7 @@
   top: 60px;
   bottom: 0;
   width: 1px;
-  background: linear-gradient(to bottom, var(--border), transparent);
+  background: linear-gradient(to bottom, var(--border), var(--accent2));
 }
 
 @keyframes fade-up {

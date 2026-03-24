@@ -6,6 +6,14 @@ import PhotoReel from './PhotoReel'
 import './LandingHero.css'
 import { useMediaQuery } from '@mantine/hooks'
 
+const avatarBgs = [
+  `url(/Avatars/1.jpg)`,
+  `url(/Avatars/2.jpg)`,
+  `url(/Avatars/3.jpg)`,
+  `url(/Avatars/4.jpg)`,
+  `url(/Avatars/5.jpg)`,
+]
+
 export default function LandingHero() {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
   const heroRef = useRef(null)
@@ -69,16 +77,23 @@ export default function LandingHero() {
           </Group>
           <Group className="lp-hero-social-proof" gap="sm">
             <Group gap={0} className="lp-avatars">
-              {['#ff6b9d', '#ffd93d', '#6bcb77', '#4d96ff'].map((c, i) => (
+              {avatarBgs.map((c, i) => (
                 <Box
                   key={i}
                   className="lp-avatar"
-                  style={{ background: c, zIndex: 4 - i }}
+                  style={{ 
+                    backgroundImage: c, 
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    zIndex: 4 - i,
+                    border: '2.5px solid #000000',
+                  }}
                 />
               ))}
             </Group>
             <Text size="sm" c="dimmed" className="lp-proof-text">
-              Join <Text span fw={700} inherit>50,000+</Text> people sharing moments
+              Join <Text span fw={700} inherit>100+</Text> people sharing moments
             </Text>
           </Group>
         </Box>

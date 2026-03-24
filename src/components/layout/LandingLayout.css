@@ -1,7 +1,7 @@
 .landing-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .landing-layout.landing-layout--dark {
@@ -19,6 +19,16 @@
   padding-left: 0;
   padding-right: 0;
   overflow-x: hidden;
+}
+
+.landing-layout-content--login {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  overflow-x: hidden;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Glassmorphism header (unauthenticated / landing) */

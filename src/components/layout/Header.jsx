@@ -23,6 +23,7 @@ import {
 } from "react-icons/io5";
 import { logout } from '../../store/slices/authSlice';
 import Sidebar from './Sidebar';
+import './Layout.css';
 
 function Header() {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -34,24 +35,15 @@ function Header() {
  
   if (!isAuthenticated) {
     return (
-      <>
-        <header className="header-glass">
-          <div className="header-glass-inner" style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: isMobile ? '0 1rem' : '0 2rem',
-            height: '72px'
-          }}>
+      <header className="header-glass">
+        <div className="header-glass-inner" style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: isMobile ? '0 1rem' : '0 2rem',
+          height: '72px'
+        }}>
           <Group>
-            {isMobile && (
-              <Burger
-                opened={opened}
-                onClick={toggle}
-                color="white"
-              />
-            )}
-
             <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
               <Group gap="xs">
                 <IoImage size={26} color="white" />
@@ -60,32 +52,27 @@ function Header() {
             </Link>
           </Group>
 
-          {!isMobile && (
-            <Group>
-              <Button variant="subtle" c="white" onClick={() => navigate('/login')}>
-                Sign In
-              </Button>
-              <Button variant="light" color="pink" onClick={() => navigate('/login')}>
-                Get Started
-              </Button>
-            </Group>
-          )}
-          </div>
-        </header>
-
-        {isMobile && (
-          <Drawer
-            opened={opened}
-            onClose={close}
-            size="75%"
-            padding="md"
-            title="Menu"
-            position="left"
-          >
-            <Sidebar />
-          </Drawer>
-        )}
-      </>
+          <Group gap={isMobile ? 'xs' : 'md'} wrap="nowrap">
+            {/* <Button
+              variant="subtle"
+              c="white"
+              size={isMobile ? 'xs' : 'sm'}
+              onClick={() => navigate('/login')}
+            >
+              Sign In
+            </Button> */}
+            <Button
+              variant="light"
+              color="pink"
+              size={isMobile ? 'xs' : 'sm'}
+              onClick={() => navigate('/login')}
+              className='landing-cta-header'
+            >
+              {isMobile ? 'Start' : 'Get Started'}
+            </Button>
+          </Group>
+        </div>
+      </header>
     );
   }
 

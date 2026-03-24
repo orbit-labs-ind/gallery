@@ -3,12 +3,9 @@
   min-height: 100vh;
 }
 
-/* Page styles */
-.landing-page,
-.login-page,
-.dashboard-page {
-  max-width: 32rem;
-  margin: 0 auto;
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: #080b12;
 }
 
 .landing-page h2,

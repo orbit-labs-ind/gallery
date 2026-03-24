@@ -3,7 +3,7 @@ import { STRIP_ITEMS } from '../constants'
 import './FeatureStrip.css'
 
 export default function FeatureStrip() {
-  const items = [...STRIP_ITEMS, ...STRIP_ITEMS]
+  const items = [...STRIP_ITEMS, ...STRIP_ITEMS, ...STRIP_ITEMS, ...STRIP_ITEMS]
 
   return (
     <section className="lp-strip">

@@ -1,5 +1,5 @@
 import { Container, Group, ActionIcon, Text, Anchor } from '@mantine/core';
-import { IoLogoTwitter, IoLogoYoutube, IoLogoInstagram, IoImage } from "react-icons/io5";
+import { IoImage } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useMediaQuery } from '@mantine/hooks';
@@ -65,47 +65,6 @@ function Footer() {
             <Anchor href="#" c={themeStyles.dimmed} size="sm" underline="never">
               Terms
             </Anchor>
-          </Group>
-
-          {/* Social Icons */}
-          <Group gap="xs">
-
-            {/* Twitter */}
-            <ActionIcon
-              size="lg"
-              variant="subtle"
-              component="a"
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <IoLogoTwitter size={18} />
-            </ActionIcon>
-
-            {/* YouTube */}
-            <ActionIcon
-              size="lg"
-              variant="subtle"
-              component="a"
-              href="https://www.youtube.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <IoLogoYoutube size={18} />
-            </ActionIcon>
-
-            {/* Instagram */}
-            <ActionIcon
-              size="lg"
-              variant="subtle"
-              component="a"
-              href="https://www.instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <IoLogoInstagram size={18} />
-            </ActionIcon>
-
           </Group>
         </div>
 

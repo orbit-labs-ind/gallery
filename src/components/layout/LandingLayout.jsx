@@ -7,18 +7,20 @@ import './LandingLayout.css'
 function LandingLayout() {
   const { pathname } = useLocation()
   const isLandingIndex = pathname === '/'
+  const isLoginRoute = pathname === '/login'
+  const useDarkShell = isLandingIndex || isLoginRoute
 
   return (
-    <div className={`landing-layout ${isLandingIndex ? 'landing-layout--dark' : ''}`}>
+    <div className={`landing-layout ${useDarkShell ? 'landing-layout--dark' : ''}`}>
       <div style={{ height: '80px', minHeight: '80px', width: '100%', position: 'sticky', top: 0, zIndex: 100 }}>
         <Header />
       </div>
       <main
-        className={`landing-layout-content ${isLandingIndex ? 'landing-layout-content--full' : ''}`}
+        className={`landing-layout-content ${isLandingIndex ? 'landing-layout-content--full' : ''} ${isLoginRoute ? 'landing-layout-content--login' : ''}`}
       >
         <Outlet />
       </main>
-      <Footer />
+      {!isLoginRoute && <Footer />}
     </div>
   )
 }

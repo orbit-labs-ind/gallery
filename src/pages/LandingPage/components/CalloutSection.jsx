@@ -16,9 +16,6 @@ export default function CalloutSection() {
             withBorder
             shadow="sm"
           >
-            <Text className="lp-callout-icon" size="2.25rem" component="span">
-              {card.icon}
-            </Text>
             <Title order={3} className="lp-callout-card-title">
               {card.title}
             </Title>

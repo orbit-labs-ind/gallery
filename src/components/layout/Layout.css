@@ -95,6 +95,12 @@
     border-top-color: rgba(0, 0, 0, 0.08);
   }
 }
+.landing-cta-header{
+  &:active, &:focus{
+    border: none;
+    outline: none;
+  }
+}
 
 @media (max-width: 640px) {
   .layout {
