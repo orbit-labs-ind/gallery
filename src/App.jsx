@@ -4,7 +4,7 @@ import Layout from './components/layout/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage/LandingPage'
 import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
+import DashboardPage from './pages/Dashboard/DashboardPage'
 import ImgPage from './pages/imgPage'
 import './App.css'
 import '@mantine/core/styles.css';

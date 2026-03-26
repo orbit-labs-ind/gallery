@@ -58,7 +58,7 @@
 
 .layout-content {
   flex: 1;
-  padding: 1.5rem;
+  padding: 0px;
   overflow: auto;
 }
 

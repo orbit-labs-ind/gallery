@@ -6,7 +6,8 @@ import Sidebar from './Sidebar'
 import Header from './Header'
 import Footer from './Footer'
 import './Layout.css'
-import { Box } from '@mantine/core'
+import { hideHeaderFooterRoutes } from '../../common/utils'
+import { AlbumLibraryProvider } from '../../context/AlbumLibraryContext'
 
 
 const ACTIVITY_THROTTLE_MS = 30 * 1000 // 30 seconds
@@ -62,18 +63,25 @@ function Layout() {
     return () => clearInterval(interval)
   }, [dispatch])
 
+  const hideChrome = hideHeaderFooterRoutes.some((pattern) =>
+    pattern.test(window.location.pathname)
+  )
+
   return (
     <div className="layout">
-      <Sidebar />
-      <div className="layout-main">
-        <div style={{ height: '80px', minHeight: '80px', width: '100%' }}>
-          <Header />
+      <AlbumLibraryProvider>
+        <div className="layout-main">
+          {!hideChrome ? (
+            <div style={{ height: '70px', minHeight: '70px', width: '100%' }}>
+              <Header />
+            </div>
+          ) : null}
+          <main className="layout-content">
+            <Outlet />
+          </main>
+          {!hideChrome ? <Footer /> : null}
         </div>
-        <main className="layout-content">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
+      </AlbumLibraryProvider>
     </div>
   )
 }

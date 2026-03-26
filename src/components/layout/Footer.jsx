@@ -3,6 +3,7 @@ import { IoImage } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useMediaQuery } from '@mantine/hooks';
+import Logo from '../Logo/Logo';
 
 function Footer() {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -39,12 +40,7 @@ function Footer() {
         }}>
 
           {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <IoImage size={24} color={themeStyles.logoColor} />
-            <Text fw={700} size="lg" c={themeStyles.text}>
-              Gallery
-            </Text>
-          </div>
+          <Logo size={30} color="white" />
 
           {/* Navigation */}
           <Group gap="lg">

@@ -1,0 +1,54 @@
+.member-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 8px 6px 6px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.88);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.member-pill__avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+.member-pill__name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.member-pill__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  margin: 0 -2px 0 2px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.member-pill__remove:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.member-pill__remove:focus-visible {
+  outline: 2px solid rgba(255, 107, 157, 0.8);
+  outline-offset: 1px;
+}

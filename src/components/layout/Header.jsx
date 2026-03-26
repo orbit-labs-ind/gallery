@@ -1,8 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Group,
-  Text,
   Button,
   Avatar,
   Menu,
@@ -19,20 +18,24 @@ import {
   IoLogOutOutline,
   IoChevronDown,
   IoPersonOutline,
-  IoSettingsOutline
-} from "react-icons/io5";
-import { logout } from '../../store/slices/authSlice';
-import Sidebar from './Sidebar';
-import './Layout.css';
+  IoSettingsOutline,
+  IoAdd,
+} from 'react-icons/io5'
+import { logout } from '../../store/slices/authSlice'
+import Sidebar from './Sidebar'
+import './Layout.css'
+import Logo from '../Logo/Logo'
+import { useAlbumLibraryOptional } from '../../context/AlbumLibraryContext'
 
 function Header() {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [opened, { toggle, close }] = useDisclosure(false);
+  const [opened, { toggle, close }] = useDisclosure(false)
+  const albumLibrary = useAlbumLibraryOptional()
+  const openCreateAlbum = albumLibrary?.openCreateAlbum ?? (() => {})
 
- 
   if (!isAuthenticated) {
     return (
       <header className="header-glass">
@@ -45,10 +48,7 @@ function Header() {
         }}>
           <Group>
             <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
-              <Group gap="xs">
-                <IoImage size={26} color="white" />
-                <Text fw={700} c="white">Gallery</Text>
-              </Group>
+              <Logo size={30} color="white" />
             </Link>
           </Group>
 
@@ -73,38 +73,56 @@ function Header() {
           </Group>
         </div>
       </header>
-    );
+    )
   }
 
   return (
     <>
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: isMobile ? '0 1rem' : '0 2rem',
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e0e0e0',
-        height: '64px'
-      }}>
-        <Group>
-          {isMobile && (
-            <Burger
-              opened={opened}
-              onClick={toggle}
-            />
-          )}
-
-          <Text fw={700}>Dashboard</Text>
+      <header
+        className="header-dashboard"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: isMobile ? '0 1rem' : '0 2rem',
+          background: 'rgba(10, 10, 14, 0.82)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          height: '64px',
+        }}
+      >
+        <Group gap="sm" wrap="nowrap">
+          {isMobile && <Burger opened={opened} onClick={toggle} color="white" />}
+          <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Logo size={isMobile ? 26 : 30} color="white" />
+          </Link>
         </Group>
 
-        <Group>
+        <Group gap={isMobile ? '6px' : 'sm'} wrap="nowrap">
+          <Button
+            leftSection={<IoAdd size={18} />}
+            variant="light"
+            color="pink"
+            size={isMobile ? 'xs' : 'sm'}
+            radius="xl"
+            onClick={openCreateAlbum}
+            styles={{
+              root: {
+                background: 'rgba(255, 107, 157, 0.18)',
+                color: '#fff',
+                border: '1px solid rgba(255, 107, 157, 0.35)',
+              },
+            }}
+          >
+            {isMobile ? 'New' : 'Create album'}
+          </Button>
 
           {/* 🔔 Notification Dropdown */}
           <Menu shadow="md" width={260} position="bottom-end" withArrow>
             <Menu.Target>
               <Indicator color="red" size={8} offset={4}>
-                <ActionIcon variant="subtle" size="lg">
+                <ActionIcon variant="subtle" size="lg" c="white">
                   <IoNotificationsOutline size={22} />
                 </ActionIcon>
               </Indicator>
@@ -137,12 +155,12 @@ function Header() {
           <Menu shadow="md" width={200} position="bottom-end" withArrow>
             <Menu.Target>
               <UnstyledButton>
-                <Group gap="xs">
+                <Group gap="xs" wrap="nowrap">
                   <Avatar
                     src="https://robohash.org/83f3a28043cd58427867bf7ac4bfe034?set=set4"
                     radius="xl"
                   />
-                  <IoChevronDown size={14} />
+                  <IoChevronDown size={14} color="rgba(255,255,255,0.8)" />
                 </Group>
               </UnstyledButton>
             </Menu.Target>
@@ -185,7 +203,7 @@ function Header() {
         </Drawer>
       )}
     </>
-  );
+  )
 }
 
-export default Header;
+export default Header

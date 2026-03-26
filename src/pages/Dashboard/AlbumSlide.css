@@ -1,0 +1,84 @@
+/* ── Slide inner (portrait card in horizontal carousels; vertical stack in vertical swiper) ── */
+.dash-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 230px;
+  overflow: hidden;
+}
+
+.dash-slide-img-wrap {
+  position: absolute;
+  inset: -25% 0;
+  width: 100%;
+  height: 150%;
+  overflow: hidden;
+}
+
+.dash-slide-img-wrap--horizontal {
+  inset: 0 -25%;
+  width: 100%;
+  height: 100%;
+}
+
+.dash-slide-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dash-slide-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.25) 45%,
+    transparent 72%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dash-slide-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.5rem 1.75rem 1.75rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dash-slide-caption h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.35rem, 3.2vw, 2.15rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+}
+
+.dash-slide-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.dash-slide-lock {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 3;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffe066;
+  backdrop-filter: blur(8px);
+}

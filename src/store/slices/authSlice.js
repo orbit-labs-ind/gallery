@@ -37,9 +37,25 @@ export const validateJWT = (token) => {
   }
 }
 
+/**
+ * Dev-only: set `VITE_DEV_FORCE_AUTH=true` in `.env` / `.env.local` and restart Vite.
+ * Skips token checks so you can open /dashboard without login (UI testing).
+ */
+export function isDevForceAuthEnabled() {
+  if (!import.meta.env.DEV) return false
+  const v = (import.meta.env.VITE_DEV_FORCE_AUTH ?? '').toString().trim().toLowerCase()
+  return v === 'true' || v === '1' || v === 'yes'
+}
+
+const devForceAuth = isDevForceAuthEnabled()
+
 const getInitialAuth = () => {
   if (typeof window === 'undefined') {
     return { isAuthenticated: false, email: null }
+  }
+
+  if (devForceAuth) {
+    return { isAuthenticated: true, email: 'dev@local.test' }
   }
 
   localStorage.removeItem('gallery_token_expiry')
@@ -100,6 +116,11 @@ const authSlice = createSlice({
     },
 
     checkTokenExpiry(state) {
+      /* Without this, Layout/ProtectedRoute clear auth on every poll — no token in localStorage. */
+      if (isDevForceAuthEnabled()) {
+        return
+      }
+
       const token = localStorage.getItem(TOKEN_KEY)
 
       if (!token) {

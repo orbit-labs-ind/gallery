@@ -5,6 +5,7 @@ import { Title, Text, Button, Group, Box, Badge } from '@mantine/core'
 import PhotoReel from './PhotoReel'
 import './LandingHero.css'
 import { useMediaQuery } from '@mantine/hooks'
+import '../../../common/common.css';
 
 const avatarBgs = [
   `url(/Avatars/1.jpg)`,
