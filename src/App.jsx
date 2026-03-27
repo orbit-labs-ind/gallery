@@ -5,14 +5,19 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage/LandingPage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/Dashboard/DashboardPage'
+import OrganizationsPage from './pages/OrganizationsPage/OrganizationsPage'
 import ImgPage from './pages/imgPage'
 import './App.css'
 import '@mantine/core/styles.css';
-import { MantineProvider } from '@mantine/core';
+import { createTheme, MantineProvider } from '@mantine/core';
+
+const theme = createTheme({
+  focusRing: 'never',
+});
 
 function App() {
   return (
-    <MantineProvider>
+    <MantineProvider theme={theme}>
       <Routes>
         <Route path="/" element={<LandingLayout />}>
           <Route index element={<LandingPage />} />
@@ -20,6 +25,14 @@ function App() {
         </Route>
 
         <Route element={<Layout />}>
+          <Route
+            path="organizations"
+            element={
+              <ProtectedRoute>
+                <OrganizationsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="dashboard"
             element={

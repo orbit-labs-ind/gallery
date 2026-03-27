@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import {
   EffectCoverflow,
@@ -13,11 +14,14 @@ import 'swiper/css/pagination'
 import 'swiper/css/parallax'
 import '../../common/common.css'
 import './DashboardPage.css'
-import { Box, Button, Stack, Text, Title } from '@mantine/core'
-import { IoAdd } from 'react-icons/io5'
+import { Box, Button, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { IoAdd, IoChevronForward } from 'react-icons/io5'
 import { useAlbumLibrary } from '../../context/AlbumLibraryContext'
+import { isDevForceAuthEnabled } from '../../store/slices/authSlice'
+import { fetchCurrentUser } from '../../api/session'
 import { AlbumSlide } from './AlbumSlide'
 import { AlbumCategorySegment } from './AlbumCategorySegment'
+import { AlbumSettingsModal } from './AlbumSettingsModal'
 
 const verticalAlbumSwiperProps = {
   modules: [EffectCoverflow, Keyboard, Mousewheel, Pagination, Parallax],
@@ -46,7 +50,38 @@ const DashboardPage = () => {
   const heroRef = useRef(null)
   const sectionsSwiperRef = useRef(null)
   const [sectionIndex, setSectionIndex] = useState(0)
-  const { sections: albumSections, openCreateAlbum } = useAlbumLibrary()
+  const [userId, setUserId] = useState(null)
+  const [settingsAlbum, setSettingsAlbum] = useState(null)
+  const navigate = useNavigate()
+  const {
+    sections: albumSections,
+    openCreateAlbum,
+    canCreateAlbum,
+    currentOrgId,
+    currentOrgName,
+    albumsLoading,
+    setActiveAlbumSegmentId,
+    refreshAlbums,
+  } = useAlbumLibrary()
+
+  useEffect(() => {
+    if (isDevForceAuthEnabled()) return
+    fetchCurrentUser()
+      .then((d) => setUserId(d.user?.id || null))
+      .catch(() => setUserId(null))
+  }, [])
+
+  useEffect(() => {
+    if (isDevForceAuthEnabled()) return
+    if (!currentOrgId) {
+      navigate('/organizations', { replace: true })
+    }
+  }, [currentOrgId, navigate])
+
+  useEffect(() => {
+    const id = albumSections[sectionIndex]?.id
+    if (id) setActiveAlbumSegmentId(id)
+  }, [sectionIndex, albumSections, setActiveAlbumSegmentId])
 
   const goToSection = (index) => {
     setSectionIndex(index)
@@ -54,6 +89,28 @@ const DashboardPage = () => {
   }
 
   const isCompletelyEmpty = albumSections.every((s) => s.albums.length === 0)
+
+  if (!isDevForceAuthEnabled() && !currentOrgId) {
+    return null
+  }
+
+  if (albumsLoading && isCompletelyEmpty) {
+    return (
+      <section
+        className="lp-hero dash-dashboard-hero"
+        style={{ alignItems: 'center', padding: '6px', justifyContent: 'center' }}
+        ref={heroRef}
+      >
+        <div className="lp-blob lp-blob-1" aria-hidden />
+        <div className="lp-blob lp-blob-2" aria-hidden />
+        <div className="lp-blob lp-blob-3" aria-hidden />
+        <div className="lp-grid-overlay" aria-hidden />
+        <Text c="rgba(255,255,255,0.65)" size="sm">
+          Loading albums…
+        </Text>
+      </section>
+    )
+  }
 
   if (isCompletelyEmpty) {
     return (
@@ -75,6 +132,16 @@ const DashboardPage = () => {
           maw={480}
           w="100%"
         >
+          {currentOrgName ? (
+            <Paper className="dash-org-chip dash-org-chip--solo" p="sm" radius="md" withBorder>
+              <Text size="sm" c="rgba(255,255,255,0.85)" ta="center" fw={600}>
+                {currentOrgName}
+              </Text>
+              <Text size="xs" c="dimmed" ta="center">
+                Current organization
+              </Text>
+            </Paper>
+          ) : null}
           <Title order={2} ta="center" c="#fff" fw={700}>
             No albums yet
           </Title>
@@ -82,15 +149,21 @@ const DashboardPage = () => {
             Create an album to start collecting memories. You can set privacy,
             invite members, and add photos after it&apos;s created.
           </Text>
-          <Button
-            leftSection={<IoAdd size={20} />}
-            color="pink"
-            size="md"
-            radius="xl"
-            onClick={openCreateAlbum}
-          >
-            Create album
-          </Button>
+          {canCreateAlbum ? (
+            <Button
+              leftSection={<IoAdd size={20} />}
+              color="teal"
+              size="md"
+              radius="xl"
+              onClick={openCreateAlbum}
+            >
+              Create album
+            </Button>
+          ) : (
+            <Text size="sm" c="rgba(255,255,255,0.55)" ta="center">
+              You don&apos;t have permission to create albums in this organization.
+            </Text>
+          )}
         </Stack>
       </section>
     )
@@ -107,6 +180,28 @@ const DashboardPage = () => {
       <div className="lp-blob lp-blob-3" aria-hidden />
       <div className="lp-grid-overlay" aria-hidden />
       <Stack gap="12px" w="100%" maw="480px" h="100%" justify="flex-start" style={{ overflow: 'hidden' }} pt={12}>
+        <Paper
+          component={Link}
+          to="/organizations"
+          className="dash-org-chip"
+          p="sm"
+          radius="md"
+          withBorder
+          style={{ textDecoration: 'none', cursor: 'pointer' }}
+        >
+          <Group justify="space-between" wrap="nowrap" gap="sm">
+            <div style={{ minWidth: 0 }}>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={700} style={{ letterSpacing: '0.06em' }}>
+                Organization
+              </Text>
+              <Text size="sm" c="#fff" fw={700} lineClamp={1}>
+                {currentOrgName || 'Select organization'}
+              </Text>
+            </div>
+            <IoChevronForward size={18} color="rgba(165,243,252,0.85)" />
+          </Group>
+        </Paper>
+
         <AlbumCategorySegment
           sections={albumSections}
           activeIndex={sectionIndex}
@@ -136,15 +231,21 @@ const DashboardPage = () => {
                       <Text ta="center" c="rgba(255,255,255,0.7)" size="sm" mb="md">
                         No albums in {section.title.toLowerCase()} yet.
                       </Text>
-                      <Button
-                        variant="light"
-                        color="pink"
-                        fullWidth
-                        leftSection={<IoAdd size={18} />}
-                        onClick={openCreateAlbum}
-                      >
-                        Create album
-                      </Button>
+                      {canCreateAlbum && section.id !== 'joined' ? (
+                        <Button
+                          variant="light"
+                          color="teal"
+                          fullWidth
+                          leftSection={<IoAdd size={18} />}
+                          onClick={openCreateAlbum}
+                        >
+                          Create album
+                        </Button>
+                      ) : section.id === 'joined' ? (
+                        <Text size="xs" ta="center" c="dimmed">
+                          Albums others share with you appear here.
+                        </Text>
+                      ) : null}
                     </Box>
                   ) : (
                     <div className="dash-expo-perspective">
@@ -156,7 +257,16 @@ const DashboardPage = () => {
                         >
                           {section.albums.map((album) => (
                             <SwiperSlide key={album.id}>
-                              <AlbumSlide album={album} />
+                              <AlbumSlide
+                                album={album}
+                                showSettings={
+                                  Boolean(
+                                    userId &&
+                                      String(album.ownerId) === String(userId)
+                                  )
+                                }
+                                onOpenSettings={setSettingsAlbum}
+                              />
                             </SwiperSlide>
                           ))}
                         </Swiper>
@@ -169,6 +279,14 @@ const DashboardPage = () => {
           </Swiper>
         </Box>
       </Stack>
+
+      <AlbumSettingsModal
+        orgId={currentOrgId}
+        album={settingsAlbum}
+        opened={Boolean(settingsAlbum)}
+        onClose={() => setSettingsAlbum(null)}
+        onSaved={() => refreshAlbums()}
+      />
     </section>
   )
 }

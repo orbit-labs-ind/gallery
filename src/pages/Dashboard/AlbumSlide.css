@@ -67,6 +67,34 @@
   color: rgba(255, 255, 255, 0.78);
 }
 
+.dash-slide-settings {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 4;
+  pointer-events: auto;
+}
+
+.dash-slide-settings__btn {
+  background: rgba(15, 20, 35, 0.55) !important;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  color: #e0f2fe !important;
+}
+
+.dash-slide-settings__btn:focus,
+.dash-slide-settings__btn:focus-visible {
+  outline: none;
+}
+
+.dash-slide-stats {
+  margin-bottom: 0.35rem;
+}
+
+.dash-slide-stat {
+  color: rgba(186, 230, 253, 0.95) !important;
+  font-weight: 600;
+}
+
 .dash-slide-lock {
   position: absolute;
   top: 1rem;

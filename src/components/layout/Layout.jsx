@@ -1,10 +1,9 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { syncAuthFromStorage, isDevForceAuthEnabled, TOKEN_KEY } from '../../store/slices/authSlice'
 import { store } from '../../store/store'
 import { fetchCurrentUser } from '../../api/session'
-import Sidebar from './Sidebar'
 import Header from './Header'
 import Footer from './Footer'
 import './Layout.css'
@@ -14,6 +13,7 @@ import { AlbumLibraryProvider } from '../../context/AlbumLibraryContext'
 function Layout() {
   const dispatch = useDispatch()
   const isAuthenticated = useSelector((s) => s.auth.isAuthenticated)
+  const location = useLocation()
 
   useEffect(() => {
     if (!isAuthenticated || isDevForceAuthEnabled()) return
@@ -39,6 +39,10 @@ function Layout() {
     pattern.test(window.location.pathname)
   )
 
+  const hideFooter =
+    /^\/organizations\/?$/.test(location.pathname) ||
+    /^\/dashboard\/?$/.test(location.pathname)
+
   return (
     <div className="layout">
       <AlbumLibraryProvider>
@@ -51,7 +55,7 @@ function Layout() {
           <main className="layout-content">
             <Outlet />
           </main>
-          {!hideChrome ? <Footer /> : null}
+          {!hideChrome && !hideFooter ? <Footer /> : null}
         </div>
       </AlbumLibraryProvider>
     </div>

@@ -48,8 +48,12 @@ button:hover {
   border-color: #646cff;
 }
 button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:focus-visible,
+[role='button']:focus,
+[role='button']:focus-visible,
+[role='tab']:focus,
+[role='tab']:focus-visible {
+  outline: none;
 }
 
 @media (prefers-color-scheme: light) {

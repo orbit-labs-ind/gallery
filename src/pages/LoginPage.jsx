@@ -99,7 +99,7 @@ function LoginPage() {
           email: data.user?.email || normalizedEmail,
         })
       )
-      navigate('/dashboard', { replace: true })
+      navigate('/organizations', { replace: true })
     } catch (err) {
       setError(err.message || 'Verification failed')
     } finally {

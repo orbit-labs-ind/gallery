@@ -1,5 +1,4 @@
 import React from 'react'
-import { LayoutGroup, motion } from 'framer-motion'
 import './AlbumCategorySegment.css'
 
 export function AlbumCategorySegment({ sections, activeIndex, onSelect }) {
@@ -15,41 +14,33 @@ export function AlbumCategorySegment({ sections, activeIndex, onSelect }) {
   }
 
   return (
-    <LayoutGroup id="dash-album-category-segment">
-      <div
-        className="dash-segment"
-        role="tablist"
-        aria-label="Album category"
-        onKeyDown={handleKeyDown}
-      >
+    <div
+      className="dash-seg-scroll"
+      role="tablist"
+      aria-label="Album collections"
+      onKeyDown={handleKeyDown}
+    >
+      <div className="dash-seg-scroll__inner">
         {sections.map((section, index) => {
           const isActive = index === activeIndex
+          const accent = section.accent || 'coral'
           return (
             <button
               key={section.id}
               type="button"
               role="tab"
               aria-selected={isActive}
-              className="dash-segment__option"
+              className={`dash-seg-chip dash-seg-chip--${accent}${isActive ? ' dash-seg-chip--active' : ''}`}
               onClick={() => onSelect(index)}
             >
-              {isActive && (
-                <motion.span
-                  layoutId="dash-album-category-pill"
-                  className="dash-segment__pill"
-                  transition={{
-                    type: 'spring',
-                    stiffness: 520,
-                    damping: 38,
-                    mass: 0.85,
-                  }}
-                />
-              )}
-              <span className="dash-segment__label">{section.title}</span>
+              <span className="dash-seg-chip__label">{section.title}</span>
+              {section.albums?.length > 0 ? (
+                <span className="dash-seg-chip__count">{section.albums.length}</span>
+              ) : null}
             </button>
           )
         })}
       </div>
-    </LayoutGroup>
+    </div>
   )
 }

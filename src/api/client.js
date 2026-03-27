@@ -1,6 +1,7 @@
 import { store } from '../store/store'
 import {
   TOKEN_KEY,
+  CURRENT_ORG_KEY,
   syncAuthFromStorage,
   logout,
 } from '../store/slices/authSlice'
@@ -31,6 +32,14 @@ export async function apiFetch(path, options = {}) {
 
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const orgId =
+    typeof localStorage !== 'undefined'
+      ? localStorage.getItem(CURRENT_ORG_KEY)
+      : null
+  if (orgId) {
+    headers.set('X-Organization-Id', orgId)
   }
 
   const url = path.startsWith('/') ? `${base}${path}` : `${base}/${path}`

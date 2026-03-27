@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 
 export const TOKEN_KEY = 'gallery_token'
 export const EMAIL_KEY = 'gallery_email'
+export const CURRENT_ORG_KEY = 'gallery_current_org_id'
 
 function parseJwtPayload(token) {
   try {
@@ -70,6 +71,7 @@ const getInitialAuth = () => {
   if (!validation.valid || validation.expired) {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(EMAIL_KEY)
+    localStorage.removeItem(CURRENT_ORG_KEY)
     return { isAuthenticated: false, email: null }
   }
 
@@ -103,6 +105,7 @@ const authSlice = createSlice({
     logout(state) {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(EMAIL_KEY)
+      localStorage.removeItem(CURRENT_ORG_KEY)
 
       state.isAuthenticated = false
       state.email = null
@@ -128,6 +131,7 @@ const authSlice = createSlice({
       if (!validation.valid || validation.expired) {
         localStorage.removeItem(TOKEN_KEY)
         localStorage.removeItem(EMAIL_KEY)
+        localStorage.removeItem(CURRENT_ORG_KEY)
         state.isAuthenticated = false
         state.email = null
         return

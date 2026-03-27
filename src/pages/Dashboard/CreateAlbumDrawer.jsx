@@ -18,36 +18,7 @@ import { MOCK_MEMBERS } from './mockMembers'
 import { MemberPill } from './MemberPill'
 import './CreateAlbumDrawer.css'
 
-const PLACEHOLDER_COVER =
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=900&q=80'
-
-function buildAlbumPayload({
-  name,
-  isPublic,
-  description,
-  members,
-  coverPreviewUrl,
-}) {
-  const d = new Date().toISOString().slice(0, 10)
-  const idSuffix =
-    typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID().slice(0, 8)
-      : String(Date.now())
-
-  return {
-    id: `yours-${idSuffix}`,
-    title: name.trim(),
-    created_at: d,
-    updated_at: d,
-    tags: [],
-    cover_image: coverPreviewUrl || PLACEHOLDER_COVER,
-    is_accessible: isPublic,
-    description: description.trim() || undefined,
-    member_ids: members.map((m) => m.id),
-  }
-}
-
-export function CreateAlbumDrawer({ opened, onClose, onCreated }) {
+export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
   const [name, setName] = useState('')
   const [nameError, setNameError] = useState('')
   const [isPublic, setIsPublic] = useState(false)
@@ -57,6 +28,8 @@ export function CreateAlbumDrawer({ opened, onClose, onCreated }) {
   const fileRef = useRef(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const didSubmitRef = useRef(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   useEffect(() => {
     if (!opened) {
@@ -66,6 +39,8 @@ export function CreateAlbumDrawer({ opened, onClose, onCreated }) {
       setDescription('')
       setMembers([])
       setPickerOpen(false)
+      setSubmitting(false)
+      setSubmitError('')
       setCoverPreviewUrl((prev) => {
         if (prev && !didSubmitRef.current) URL.revokeObjectURL(prev)
         didSubmitRef.current = false
@@ -93,23 +68,30 @@ export function CreateAlbumDrawer({ opened, onClose, onCreated }) {
     })
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmed = name.trim()
     if (!trimmed) {
       setNameError('Album name is required')
       return
     }
     setNameError('')
-    didSubmitRef.current = true
-    onCreated(
-      buildAlbumPayload({
+    setSubmitError('')
+    setSubmitting(true)
+    try {
+      await onCreateAlbum({
         name: trimmed,
         isPublic,
         description,
         members,
         coverPreviewUrl,
       })
-    )
+      didSubmitRef.current = true
+      onClose()
+    } catch (e) {
+      setSubmitError(e.message || 'Could not create album')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const availablePick = MOCK_MEMBERS.filter(
@@ -163,14 +145,14 @@ export function CreateAlbumDrawer({ opened, onClose, onCreated }) {
             <Text
               size="sm"
               fw={600}
-              c={!isPublic ? '#ff8fb8' : 'rgba(255,255,255,0.45)'}
+              c={!isPublic ? '#7dd3fc' : 'rgba(255,255,255,0.45)'}
             >
               Private
             </Text>
             <Switch
               checked={isPublic}
               onChange={(e) => setIsPublic(!!e.currentTarget.checked)}
-              color="pink"
+              color="cyan"
               size="md"
               styles={{
                 track: {
@@ -183,7 +165,7 @@ export function CreateAlbumDrawer({ opened, onClose, onCreated }) {
             <Text
               size="sm"
               fw={600}
-              c={isPublic ? '#ff8fb8' : 'rgba(255,255,255,0.45)'}
+              c={isPublic ? '#a5b4fc' : 'rgba(255,255,255,0.45)'}
             >
               Public
             </Text>
@@ -348,11 +330,17 @@ export function CreateAlbumDrawer({ opened, onClose, onCreated }) {
           view.
         </Text>
 
+        {submitError ? (
+          <Text size="sm" c="red.4">
+            {submitError}
+          </Text>
+        ) : null}
+
         <Group grow gap="sm" mt="md">
-          <Button variant="default" color="gray" onClick={onClose}>
+          <Button variant="default" color="gray" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>
-          <Button color="pink" onClick={handleSubmit}>
+          <Button color="teal" onClick={handleSubmit} loading={submitting}>
             Create album
           </Button>
         </Group>

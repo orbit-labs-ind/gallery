@@ -1,0 +1,133 @@
+.orgs-page {
+  position: relative;
+  min-height: calc(100vh - 140px);
+  overflow: hidden;
+}
+
+.orgs-page__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.orgs-page__title {
+  color: var(--text);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.orgs-page__subtitle {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.orgs-page__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.orgs-page__blob--1 {
+  width: 320px;
+  height: 320px;
+  background: var(--glow-pink);
+  top: -80px;
+  right: -60px;
+}
+
+.orgs-page__blob--2 {
+  width: 280px;
+  height: 280px;
+  background: var(--glow-blue);
+  bottom: 10%;
+  left: -100px;
+}
+
+.orgs-page__blob--3 {
+  width: 200px;
+  height: 200px;
+  background: color-mix(in srgb, var(--accent2) 32%, transparent);
+  top: 40%;
+  right: 15%;
+}
+
+.orgs-page__grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black, transparent);
+  pointer-events: none;
+}
+
+.orgs-page__glass {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.orgs-page__org-card--active {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent) !important;
+  box-shadow:
+    0 0 0 1px var(--glow-pink),
+    0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* Org icon: only theme accents (pink / blue / yellow families) */
+.orgs-page__org-icon {
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text);
+}
+
+.orgs-page__org-icon--v0 {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  box-shadow: 0 6px 24px var(--glow-pink);
+}
+
+.orgs-page__org-icon--v1 {
+  background: color-mix(in srgb, var(--accent3) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent3) 48%, transparent);
+  box-shadow: 0 6px 24px var(--glow-blue);
+}
+
+.orgs-page__org-icon--v2 {
+  background: color-mix(in srgb, var(--accent2) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent2) 45%, transparent);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--accent2) 22%, transparent);
+}
+
+.edit-org-modal__content {
+  background: color-mix(in srgb, var(--surface) 95%, transparent) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.edit-org-modal__header {
+  background: transparent !important;
+}
+
+.edit-org-modal__title {
+  color: var(--text) !important;
+  font-weight: 800 !important;
+}
+
+.edit-org-modal__body {
+  color: var(--text);
+}
+
+.orgs-page__glass-input {
+  background: color-mix(in srgb, var(--text) 6%, transparent) !important;
+  border-color: color-mix(in srgb, var(--text) 14%, transparent) !important;
+  color: var(--text) !important;
+}

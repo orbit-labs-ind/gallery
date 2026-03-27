@@ -1,0 +1,92 @@
+/**
+ * Global design tokens (shared with LandingPage).
+ * Imported from main.jsx so all routes have access.
+ */
+:root {
+  --bg: #080b12;
+  --surface: #0f1520;
+  --surface2: #161d2e;
+  --border: rgba(255, 255, 255, 0.07);
+  --text: #f0f4ff;
+  --muted: rgba(240, 244, 255, 0.45);
+  --accent: #ff6b9d;
+  --accent2: #ffd93d;
+  --accent3: #4d96ff;
+  --glow-pink: rgba(255, 107, 157, 0.35);
+  --glow-blue: rgba(77, 150, 255, 0.25);
+  --radius-card: 20px;
+  --font-display: 'Clash Display', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --mantine-font-size-xl: 1.55rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Action buttons — use className on Mantine Button / ActionIcon root */
+/* Only uses tokens above (no Mantine palette colors).               */
+/* ------------------------------------------------------------------ */
+
+button.gallery-theme-btn--primary,
+button.gallery-theme-btn--albums {
+  font-family: var(--font-body);
+  background: color-mix(in srgb, var(--accent) 18%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent) !important;
+  color: var(--text) !important;
+}
+
+button.gallery-theme-btn--primary:hover,
+button.gallery-theme-btn--albums:hover {
+  background: color-mix(in srgb, var(--accent) 28%, transparent) !important;
+}
+
+button.gallery-theme-btn--accent3 {
+  font-family: var(--font-body);
+  background: color-mix(in srgb, var(--accent3) 18%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent3) 45%, transparent) !important;
+  color: var(--text) !important;
+}
+
+button.gallery-theme-btn--accent3:hover {
+  background: color-mix(in srgb, var(--accent3) 28%, transparent) !important;
+}
+
+button.gallery-theme-btn--ghost {
+  font-family: var(--font-body);
+  background: color-mix(in srgb, var(--text) 6%, transparent) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--muted) !important;
+}
+
+button.gallery-theme-btn--ghost:hover {
+  background: color-mix(in srgb, var(--text) 10%, transparent) !important;
+  color: var(--text) !important;
+}
+
+button.gallery-theme-btn--delete {
+  font-family: var(--font-body);
+  background: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent) !important;
+  color: var(--accent) !important;
+}
+
+button.gallery-theme-btn--delete:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent) !important;
+}
+
+button.gallery-theme-btn--icon {
+  font-family: var(--font-body);
+  background: color-mix(in srgb, var(--accent3) 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent3) 38%, transparent) !important;
+  color: var(--text) !important;
+}
+
+button.gallery-theme-btn--icon:hover {
+  background: color-mix(in srgb, var(--accent3) 24%, transparent) !important;
+}
+
+.gallery-theme-text--warn {
+  color: var(--accent2);
+}
+
+.gallery-theme-text--accent3 {
+  color: var(--accent3);
+}

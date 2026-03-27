@@ -1,81 +1,92 @@
-.dash-segment {
+.dash-seg-scroll {
   position: relative;
   z-index: 30;
-  display: flex;
-  align-items: stretch;
   width: 100%;
   max-width: 100%;
-  padding: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 8px 28px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  padding-bottom: 4px;
+  mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
 }
 
-.dash-segment__option {
-  position: relative;
-  flex: 1 1 0;
-  min-width: 0;
-  border: none;
-  background: transparent;
+.dash-seg-scroll__inner {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  padding: 4px 2px 8px;
+  width: max-content;
+  min-width: 100%;
+}
+
+.dash-seg-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  padding: 10px 8px;
-  border-radius: 999px;
+  padding: 10px 16px;
+  border-radius: 14px;
   font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.55);
   -webkit-tap-highlight-color: transparent;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.dash-segment__option:focus {
+.dash-seg-chip:focus,
+.dash-seg-chip:focus-visible {
   outline: none;
 }
 
-.dash-segment__option:focus-visible {
-  outline: 2px solid rgba(255, 107, 157, 0.65);
-  outline-offset: 2px;
-}
-
-.dash-segment__pill {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: 0;
-  background: linear-gradient(
-    165deg,
-    rgba(255, 255, 255, 0.16) 0%,
-    rgba(255, 255, 255, 0.06) 100%
-  );
-  box-shadow:
-    0 0 0 1px rgba(255, 107, 157, 0.35),
-    0 4px 20px rgba(255, 107, 157, 0.12),
-    0 1px 0 rgba(255, 255, 255, 0.08) inset;
-}
-
-.dash-segment__label {
-  position: relative;
-  z-index: 1;
-  display: block;
-  font-size: clamp(0.68rem, 2.8vw, 0.78rem);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: rgba(255, 255, 255, 0.5);
-  transition: color 0.2s ease;
-}
-
-.dash-segment__option[aria-selected='true'] .dash-segment__label {
+.dash-seg-chip--active {
   color: #fff;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
 }
 
-.dash-segment__option:active:not([aria-selected='true']) .dash-segment__label {
-  color: rgba(255, 255, 255, 0.72);
+.dash-seg-chip__count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Accent borders / glows when active */
+.dash-seg-chip--coral.dash-seg-chip--active {
+  border-color: rgba(255, 138, 128, 0.65);
+  background: rgba(255, 107, 157, 0.12);
+  box-shadow: 0 0 0 1px rgba(255, 138, 128, 0.2), 0 8px 28px rgba(255, 107, 157, 0.12);
+}
+
+.dash-seg-chip--violet.dash-seg-chip--active {
+  border-color: rgba(167, 139, 250, 0.65);
+  background: rgba(139, 92, 246, 0.14);
+  box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.22), 0 8px 28px rgba(139, 92, 246, 0.12);
+}
+
+.dash-seg-chip--teal.dash-seg-chip--active {
+  border-color: rgba(45, 212, 191, 0.6);
+  background: rgba(20, 184, 166, 0.12);
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.2), 0 8px 28px rgba(34, 211, 238, 0.1);
+}
+
+.dash-seg-chip--amber.dash-seg-chip--active {
+  border-color: rgba(251, 191, 36, 0.65);
+  background: rgba(245, 158, 11, 0.12);
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.2), 0 8px 28px rgba(245, 158, 11, 0.1);
 }
