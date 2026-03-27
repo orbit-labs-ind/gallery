@@ -1,7 +1,9 @@
 import { Outlet } from 'react-router-dom'
-import { useEffect, useRef } from 'react'
-import { useDispatch } from 'react-redux'
-import { resetExpiry, checkTokenExpiry } from '../../store/slices/authSlice'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { syncAuthFromStorage, isDevForceAuthEnabled, TOKEN_KEY } from '../../store/slices/authSlice'
+import { store } from '../../store/store'
+import { fetchCurrentUser } from '../../api/session'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import Footer from './Footer'
@@ -9,58 +11,28 @@ import './Layout.css'
 import { hideHeaderFooterRoutes } from '../../common/utils'
 import { AlbumLibraryProvider } from '../../context/AlbumLibraryContext'
 
-
-const ACTIVITY_THROTTLE_MS = 30 * 1000 // 30 seconds
-
-// How often (ms) to check if the token has expired
-const EXPIRY_CHECK_INTERVAL_MS = 15 * 1000 // 15 seconds
-
 function Layout() {
   const dispatch = useDispatch()
-  const lastActivityRef = useRef(0)// 0 maen no activity yet
+  const isAuthenticated = useSelector((s) => s.auth.isAuthenticated)
 
-  //Activity listeners — reset expiry on user interaction (throttled)
   useEffect(() => {
-    const handleActivity = () => {
-      const now = Date.now()
-      if (now - lastActivityRef.current >= ACTIVITY_THROTTLE_MS) {
-        lastActivityRef.current = now
-        dispatch(resetExpiry())
-      }
-    }
+    if (!isAuthenticated || isDevForceAuthEnabled()) return
+    fetchCurrentUser().catch(() => {
+      /* 401 → logout via apiFetch; ignore network */
+    })
+  }, [isAuthenticated])
 
-    // mouseover included so hovering over buttons/elements resets expiry
-    const activityEvents = [
-      'mousemove',
-      'mouseover', // hover on any element
-      'mousedown',
-      'click',
-      'keydown', 
-      'scroll',
-      'touchstart'  //toech start mean user using phone
-    ]
-
-    activityEvents.forEach(event =>
-      window.addEventListener(event, handleActivity, { passive: true })
-    )
-
-    return () => {
-      activityEvents.forEach(event =>
-        window.removeEventListener(event, handleActivity, { passive: true })
-      )
-    }
-  }, [dispatch])
-
-  // Expiry polling — checks every 15 seconds and auto-logouts if token expired
   useEffect(() => {
-    // Check immediately in case user was already expired before visiting dashboard
-    dispatch(checkTokenExpiry())
-
-    const interval = setInterval(() => {
-      dispatch(checkTokenExpiry())
-    }, EXPIRY_CHECK_INTERVAL_MS)
-
-    return () => clearInterval(interval)
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      dispatch(syncAuthFromStorage())
+      const { auth } = store.getState()
+      if (!auth.isAuthenticated || isDevForceAuthEnabled()) return
+      if (!localStorage.getItem(TOKEN_KEY)) return
+      fetchCurrentUser().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [dispatch])
 
   const hideChrome = hideHeaderFooterRoutes.some((pattern) =>

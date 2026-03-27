@@ -58,8 +58,6 @@ const getInitialAuth = () => {
     return { isAuthenticated: true, email: 'dev@local.test' }
   }
 
-  localStorage.removeItem('gallery_token_expiry')
-
   const token = localStorage.getItem(TOKEN_KEY)
   const email = localStorage.getItem(EMAIL_KEY)
 
@@ -105,25 +103,21 @@ const authSlice = createSlice({
     logout(state) {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(EMAIL_KEY)
-      localStorage.removeItem('gallery_token_expiry')
 
       state.isAuthenticated = false
       state.email = null
     },
 
-    resetExpiry() {
-      // Server-issued JWTs are not extended client-side; activity no longer mints tokens.
-    },
-
-    checkTokenExpiry(state) {
-      /* Without this, Layout/ProtectedRoute clear auth on every poll — no token in localStorage. */
+    /** Re-read token from localStorage (e.g. after X-Renewed-Token) and refresh Redux. */
+    syncAuthFromStorage(state) {
       if (isDevForceAuthEnabled()) {
         return
       }
 
       const token = localStorage.getItem(TOKEN_KEY)
+      const email = localStorage.getItem(EMAIL_KEY)
 
-      if (!token) {
+      if (!token || !email) {
         state.isAuthenticated = false
         state.email = null
         return
@@ -134,14 +128,16 @@ const authSlice = createSlice({
       if (!validation.valid || validation.expired) {
         localStorage.removeItem(TOKEN_KEY)
         localStorage.removeItem(EMAIL_KEY)
-        localStorage.removeItem('gallery_token_expiry')
-
         state.isAuthenticated = false
         state.email = null
+        return
       }
+
+      state.isAuthenticated = true
+      state.email = email
     },
   },
 })
 
-export const { login, logout, checkTokenExpiry, resetExpiry } = authSlice.actions
+export const { login, logout, syncAuthFromStorage } = authSlice.actions
 export default authSlice.reducer

@@ -1,14 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
-
-async function parseJsonResponse(res) {
-  const text = await res.text()
-  if (!text) return {}
-  try {
-    return JSON.parse(text)
-  } catch {
-    return {}
-  }
-}
+import { API_BASE, parseJsonResponse } from './client'
 
 export async function sendOtp(email) {
   const res = await fetch(`${API_BASE}/auth/send-otp`, {
