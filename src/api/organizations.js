@@ -1,5 +1,8 @@
 import { apiFetch, parseJsonResponse } from './client'
 
+/** Dedupe concurrent GETs (React Strict Mode dev remount). */
+const getAlbumInflight = new Map()
+
 export async function listOrganizations() {
   const res = await apiFetch('/organizations')
   const data = await parseJsonResponse(res)
@@ -105,12 +108,23 @@ export async function createAlbum(orgId, payload) {
 }
 
 export async function getAlbum(orgId, albumId) {
-  const res = await apiFetch(`/organizations/${orgId}/albums/${albumId}`)
-  const data = await parseJsonResponse(res)
-  if (!res.ok) {
-    throw new Error(data.error || 'Failed to load album')
-  }
-  return data.album
+  const path = `/organizations/${orgId}/albums/${albumId}`
+  const hit = getAlbumInflight.get(path)
+  if (hit) return hit
+
+  const promise = (async () => {
+    const res = await apiFetch(path)
+    const data = await parseJsonResponse(res)
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to load album')
+    }
+    return data.album
+  })().finally(() => {
+    getAlbumInflight.delete(path)
+  })
+
+  getAlbumInflight.set(path, promise)
+  return promise
 }
 
 export async function updateAlbum(orgId, albumId, payload) {

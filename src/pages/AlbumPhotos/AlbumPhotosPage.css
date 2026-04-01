@@ -1,0 +1,205 @@
+.album-photos-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  font-family: var(--font-body);
+}
+
+.album-photos-page__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.album-photos-page__back {
+  flex-shrink: 0;
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--accent3) 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent3) 38%, transparent) !important;
+}
+
+.album-photos-page__back:hover {
+  background: color-mix(in srgb, var(--accent3) 24%, transparent) !important;
+}
+
+.album-photos-page__title-wrap {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.album-photos-page__title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 3.5vw, 1.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.album-photos-page__file-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.album-photos-page__upload-trigger {
+  flex-shrink: 0;
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--accent2) 18%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent2) 42%, transparent) !important;
+}
+
+.album-photos-page__upload-trigger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent2) 28%, transparent) !important;
+}
+
+.album-photos-page__upload-trigger:disabled {
+  opacity: 0.45;
+}
+
+.album-photos-page__menu-trigger {
+  flex-shrink: 0;
+  color: var(--muted) !important;
+  background: color-mix(in srgb, var(--text) 6%, transparent) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.album-photos-page__menu-trigger:hover {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--text) 10%, transparent) !important;
+}
+
+.album-photos-page__scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem 1rem 2.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.album-photos-page__bento {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(104px, 14vw);
+  gap: 12px;
+  grid-auto-flow: dense;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Tablet: 2 columns — wide/tall/big spans still read clearly */
+@media (max-width: 900px) and (min-width: 521px) {
+  .album-photos-page__bento {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(96px, 22vw);
+    gap: 2px;
+  }
+}
+
+/* Phone: same 4-column bento rhythm as desktop; smaller tracks = smaller thumbs */
+@media (max-width: 520px) {
+  .album-photos-page__scroll {
+    padding: 0.65rem 0.5rem 2rem;
+  }
+
+  .album-photos-page__bento {
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(48px, 11.5vw);
+    gap: 2px;
+  }
+}
+
+.album-photos-page__bento-tile {
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  display: block;
+  width: 100%;
+  min-height: 0;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.album-photos-page__bento-tile:hover {
+  /* background image scale up */
+  transform: scale(1.01);
+  border: none;
+}
+
+.album-photos-page__bento-tile:focus-visible {
+  outline: 2px solid var(--accent3);
+  outline-offset: 3px;
+}
+
+.album-photos-page__bento-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.album-photos-page__sentinel {
+  height: 4px;
+  margin-top: 1rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.album-photos-page__empty {
+  max-width: 420px;
+  margin: 2rem auto 1.5rem;
+  padding: 0 1rem;
+}
+
+.album-photos-page__empty-cta {
+  display: block;
+  margin: 0 auto;
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent2) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent2) 45%, transparent);
+  cursor: pointer;
+}
+
+.album-photos-page__empty-cta:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent2) 32%, transparent);
+}
+
+.album-photos-page__empty-cta:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.album-photos-page__end {
+  text-align: center;
+  padding: 1.25rem 1rem 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+

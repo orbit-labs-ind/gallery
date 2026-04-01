@@ -266,6 +266,12 @@ const DashboardPage = () => {
                                   )
                                 }
                                 onOpenSettings={setSettingsAlbum}
+                                onOpenAlbum={(a) =>
+                                  navigate(
+                                    `/organizations/${currentOrgId}/albums/${a.id}`,
+                                    { state: { album: a } }
+                                  )
+                                }
                               />
                             </SwiperSlide>
                           ))}

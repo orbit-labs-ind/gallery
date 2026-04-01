@@ -6,7 +6,7 @@ import LandingPage from './pages/LandingPage/LandingPage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/Dashboard/DashboardPage'
 import OrganizationsPage from './pages/OrganizationsPage/OrganizationsPage'
-import ImgPage from './pages/imgPage'
+import AlbumPhotosPage from './pages/AlbumPhotos/AlbumPhotosPage'
 import './App.css'
 import '@mantine/core/styles.css';
 import { createTheme, MantineProvider } from '@mantine/core';
@@ -42,13 +42,11 @@ function App() {
             }
           />
  
-          {/* adding imgPage.jsx file router */}
-          
           <Route
-            path={"images/"}
+            path="organizations/:orgId/albums/:albumId"
             element={
               <ProtectedRoute>
-                <ImgPage />
+                <AlbumPhotosPage />
               </ProtectedRoute>
             }
           />

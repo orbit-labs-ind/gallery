@@ -10,6 +10,7 @@ export function AlbumSlide({
   orientation = 'vertical',
   showSettings = false,
   onOpenSettings,
+  onOpenAlbum,
 }) {
   const { isActive } = useSwiperSlide()
   const isHorizontal = orientation === 'horizontal'
@@ -32,6 +33,18 @@ export function AlbumSlide({
   return (
     <div
       className={`dash-slide${isHorizontal ? ' dash-slide--horizontal' : ''}`}
+      role={onOpenAlbum ? 'button' : undefined}
+      tabIndex={onOpenAlbum ? 0 : undefined}
+      aria-label={onOpenAlbum ? `Open album ${album.title}` : undefined}
+      onClick={() => onOpenAlbum?.(album)}
+      onKeyDown={(e) => {
+        if (!onOpenAlbum) return
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onOpenAlbum(album)
+        }
+      }}
+      style={onOpenAlbum ? { cursor: 'pointer' } : undefined}
     >
       <div
         className={`dash-slide-img-wrap${isHorizontal ? ' dash-slide-img-wrap--horizontal' : ''}`}

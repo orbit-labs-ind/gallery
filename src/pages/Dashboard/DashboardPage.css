@@ -46,6 +46,15 @@
     0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 }
 
+/* Coverflow stacks slides in 3-D; inactive slides were still hit-testing on top. */
+.dash-expo-swiper--vertical .swiper-slide:not(.swiper-slide-active) {
+  pointer-events: none;
+}
+
+.dash-expo-swiper--vertical .swiper-slide-active {
+  pointer-events: auto;
+}
+
 /* Outer: horizontal — centered column + peek of prev/next category (no arrows) */
 .dash-sections-swiper {
   width: 100%;

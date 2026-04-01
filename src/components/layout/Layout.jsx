@@ -41,7 +41,8 @@ function Layout() {
 
   const hideFooter =
     /^\/organizations\/?$/.test(location.pathname) ||
-    /^\/dashboard\/?$/.test(location.pathname)
+    /^\/dashboard\/?$/.test(location.pathname) ||
+    /^\/organizations\/[^/]+\/albums\/[^/]+\/?$/.test(location.pathname)
 
   return (
     <div className="layout">
