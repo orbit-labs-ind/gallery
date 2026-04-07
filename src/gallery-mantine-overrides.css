@@ -1,0 +1,33 @@
+/**
+ * Global Mantine control tweaks (loaded after @mantine/core/styles.css).
+ * Switch: off state matches glass surfaces; on state uses --accent2 (yellow) with glow.
+ */
+
+input[type='checkbox'][role='switch']:not(:checked) + span[aria-hidden='true'] {
+  --switch-bg: color-mix(in srgb, var(--text) 10%, transparent) !important;
+  background-color: var(--switch-bg) !important;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28) !important;
+}
+
+input[type='checkbox'][role='switch']:checked + span[aria-hidden='true'] {
+  --switch-color: var(--accent2) !important;
+  --switch-bg: var(--accent2) !important;
+  background-color: var(--accent2) !important;
+  border: 1px solid color-mix(in srgb, var(--accent2) 55%, transparent) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 35%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent2) 32%, transparent) !important;
+}
+
+/* Thumb dot: dark on yellow track for contrast */
+input[type='checkbox'][role='switch']:checked
+  + span[aria-hidden='true']
+  > span[data-with-thumb-indicator]::before {
+  background-color: color-mix(in srgb, var(--surface) 35%, #1a1408) !important;
+}
+
+input[type='checkbox'][role='switch']:focus-visible + span[aria-hidden='true'] {
+  outline: 2px solid color-mix(in srgb, var(--accent3) 65%, transparent);
+  outline-offset: 2px;
+}

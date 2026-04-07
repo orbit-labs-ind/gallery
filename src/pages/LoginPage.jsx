@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { IoImage } from 'react-icons/io5'
 import { login } from '../store/slices/authSlice'
+import { setProfile } from '../store/slices/currentUserSlice'
 import { sendOtp, verifyOtp } from '../api/auth'
 import './LoginPage.css'
 
@@ -25,6 +26,7 @@ function LoginPage() {
   const otpRefs = useRef([])
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const otpString = otpCells.join('')
   const normalizedEmail = email.trim().toLowerCase()
@@ -93,13 +95,28 @@ function LoginPage() {
     setVerifying(true)
     try {
       const data = await verifyOtp(normalizedEmail, otpString)
+      const user = data.user
       dispatch(
         login({
           token: data.token,
-          email: data.user?.email || normalizedEmail,
+          email: user?.email || normalizedEmail,
         })
       )
-      navigate('/organizations', { replace: true })
+      if (user) dispatch(setProfile(user))
+
+      const from = location.state?.from
+      const pathFrom =
+        from && typeof from.pathname === 'string'
+          ? `${from.pathname}${from.search || ''}`.trim() || null
+          : null
+
+      if (pathFrom) {
+        navigate(pathFrom, { replace: true })
+      } else if (user?.needsProfileSetup) {
+        navigate('/settings/profile', { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
     } catch (err) {
       setError(err.message || 'Verification failed')
     } finally {

@@ -172,9 +172,10 @@
 .album-photo-viewer__bottom {
   flex-shrink: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
+  gap: 1rem 1.75rem;
   padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom, 0));
   border-top: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -239,6 +240,20 @@
   color: var(--accent) !important;
 }
 
+.album-photo-viewer__action--delete {
+  color: color-mix(in srgb, #f87171 85%, var(--muted));
+}
+
+.album-photo-viewer__action--delete:hover:not(:disabled) {
+  color: #fca5a5;
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+}
+
+.album-photo-viewer__action--delete:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .album-photo-viewer__action-count {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -256,6 +271,29 @@
   opacity: 0.75;
   pointer-events: none;
   z-index: 12;
+}
+
+/* Comment author row in “All comments” drawer → profile */
+.album-photo-viewer__comment-author-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  margin: -4px;
+  padding: 4px;
+  transition: background 0.15s ease;
+}
+
+.album-photo-viewer__comment-author-link:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.album-photo-viewer__comment-author-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 @media (max-width: 520px) {

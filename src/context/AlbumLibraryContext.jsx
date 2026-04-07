@@ -16,15 +16,24 @@ import {
   listOrganizations,
   fetchAlbumsForOrg,
   createAlbum as createAlbumApi,
+  uploadAlbumCover,
 } from '../api/organizations'
 
 const AlbumLibraryContext = createContext(null)
 
-/** id `joined` → no create-album affordances */
+/** Segments where “create album” is hidden (same as joined / org-owner-only views). */
+export const ALBUM_SEGMENTS_WITHOUT_CREATE = new Set(['joined', 'orgPrivateAsOwner'])
+
+/** id `joined` / `orgPrivateAsOwner` → no create-album affordances */
 export const SECTION_DEF = [
   { id: 'myPublic', title: 'My public', accent: 'coral' },
   { id: 'myPrivate', title: 'My private', accent: 'violet' },
   { id: 'orgPublic', title: 'Org library', accent: 'teal' },
+  {
+    id: 'orgPrivateAsOwner',
+    title: 'Org private',
+    accent: 'indigo',
+  },
   { id: 'joined', title: 'Joined', accent: 'amber' },
 ]
 
@@ -106,6 +115,12 @@ export function AlbumLibraryProvider({ children }) {
           albums: data.orgPublic || [],
         },
         {
+          id: 'orgPrivateAsOwner',
+          title: 'Org private',
+          accent: 'indigo',
+          albums: data.orgPrivateAsOwner || [],
+        },
+        {
           id: 'joined',
           title: 'Joined',
           accent: 'amber',
@@ -136,19 +151,22 @@ export function AlbumLibraryProvider({ children }) {
   const closeCreateAlbum = useCallback(() => setCreateOpened(false), [])
 
   const createAlbumFromDrawer = useCallback(
-    async ({ name, isPublic, description, members }) => {
+    async ({ name, isPublic, description, members, coverFile }) => {
       if (!currentOrgId) {
         throw new Error('Select an organization first')
       }
       const memberIds = (members || [])
         .map((m) => m.id)
         .filter((id) => id && /^[a-f\d]{24}$/i.test(String(id)))
-      await createAlbumApi(currentOrgId, {
+      const created = await createAlbumApi(currentOrgId, {
         title: name.trim(),
         description: description || '',
         visibility: isPublic ? 'public' : 'private',
         memberIds,
       })
+      if (coverFile && created?.id) {
+        await uploadAlbumCover(currentOrgId, created.id, coverFile)
+      }
       await refreshAlbums()
     },
     [currentOrgId, refreshAlbums]
@@ -195,6 +213,7 @@ export function AlbumLibraryProvider({ children }) {
     <AlbumLibraryContext.Provider value={value}>
       {children}
       <CreateAlbumDrawer
+        orgId={currentOrgId}
         opened={createOpened}
         onClose={closeCreateAlbum}
         onCreateAlbum={createAlbumFromDrawer}

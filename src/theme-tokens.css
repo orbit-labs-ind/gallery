@@ -63,7 +63,7 @@ button.gallery-theme-btn--ghost:hover {
 
 button.gallery-theme-btn--delete {
   font-family: var(--font-body);
-  background: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  background: color-mix(in srgb, var(--accent) 18%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent) !important;
   color: var(--accent) !important;
 }

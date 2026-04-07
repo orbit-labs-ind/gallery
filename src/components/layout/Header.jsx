@@ -22,12 +22,17 @@ import {
 import { logout } from '../../store/slices/authSlice'
 import './Layout.css'
 import Logo from '../Logo/Logo'
-import { useAlbumLibraryOptional } from '../../context/AlbumLibraryContext'
+import {
+  useAlbumLibraryOptional,
+  ALBUM_SEGMENTS_WITHOUT_CREATE,
+} from '../../context/AlbumLibraryContext'
 import { listNotifications } from '../../api/notifications'
 import { useEffect, useState } from 'react'
+import { AuthedAlbumImage } from '../../pages/AlbumPhotos/AuthedAlbumImage'
 
 function Header() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth)
+  const profile = useSelector((state) => state.currentUser.profile)
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -37,7 +42,9 @@ function Header() {
   const showCreateAlbum = Boolean(
     dashboardMatch &&
       albumLibrary?.canCreateAlbum &&
-      albumLibrary?.activeAlbumSegmentId !== 'joined'
+      !ALBUM_SEGMENTS_WITHOUT_CREATE.has(
+        albumLibrary?.activeAlbumSegmentId || ''
+      )
   )
   const organizations = albumLibrary?.organizations ?? []
   const currentOrgId = albumLibrary?.currentOrgId ?? null
@@ -118,6 +125,17 @@ function Header() {
         </Group>
 
         <Group gap={isMobile ? '6px' : 'sm'} wrap="nowrap">
+          <Button
+            component={Link}
+            to="/shared-albums"
+            variant="subtle"
+            color="gray"
+            size={isMobile ? 'xs' : 'sm'}
+            radius="xl"
+            c="rgba(255,255,255,0.85)"
+          >
+            {isMobile ? 'Shared' : 'Shared albums'}
+          </Button>
           {showCreateAlbum ? (
             <Button
               leftSection={<IoAdd size={18} />}
@@ -180,10 +198,33 @@ function Header() {
             <Menu.Target>
               <UnstyledButton>
                 <Group gap="xs" wrap="nowrap">
-                  <Avatar
-                    src="https://robohash.org/83f3a28043cd58427867bf7ac4bfe034?set=set4"
-                    radius="xl"
-                  />
+                  <div
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: '50%',
+                      overflow: 'hidden',
+                      flexShrink: 0,
+                      background: 'rgba(255,255,255,0.08)',
+                    }}
+                  >
+                    {profile?.profilePhotoStreamPath ? (
+                      <AuthedAlbumImage
+                        streamPath={profile.profilePhotoStreamPath}
+                        alt=""
+                        style={{ width: 34, height: 34, objectFit: 'cover', display: 'block' }}
+                      />
+                    ) : (
+                      <Avatar radius="xl" size={34} color="teal">
+                        {(profile?.username || profile?.email || '?').charAt(0).toUpperCase()}
+                      </Avatar>
+                    )}
+                  </div>
+                  {!isMobile ? (
+                    <Text size="sm" c="rgba(255,255,255,0.85)" lineClamp={1} maw={120}>
+                      {profile?.username || profile?.email?.split('@')[0] || 'Account'}
+                    </Text>
+                  ) : null}
                   <IoChevronDown size={14} color="rgba(255,255,255,0.8)" />
                 </Group>
               </UnstyledButton>
@@ -226,7 +267,10 @@ function Header() {
                 Organizations
               </Menu.Item>
 
-              <Menu.Item leftSection={<IoSettingsOutline size={14} />}>
+              <Menu.Item
+                leftSection={<IoSettingsOutline size={14} />}
+                onClick={() => navigate('/settings/profile')}
+              >
                 Settings
               </Menu.Item>
 

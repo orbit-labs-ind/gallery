@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { syncAuthFromStorage, isDevForceAuthEnabled, TOKEN_KEY } from '../../store/slices/authSlice'
+import { setProfile } from '../../store/slices/currentUserSlice'
 import { store } from '../../store/store'
 import { fetchCurrentUser } from '../../api/session'
 import Header from './Header'
@@ -17,10 +18,14 @@ function Layout() {
 
   useEffect(() => {
     if (!isAuthenticated || isDevForceAuthEnabled()) return
-    fetchCurrentUser().catch(() => {
-      /* 401 → logout via apiFetch; ignore network */
-    })
-  }, [isAuthenticated])
+    fetchCurrentUser()
+      .then((d) => {
+        if (d?.user) dispatch(setProfile(d.user))
+      })
+      .catch(() => {
+        /* 401 → logout via apiFetch; ignore network */
+      })
+  }, [isAuthenticated, dispatch])
 
   useEffect(() => {
     const onVisible = () => {
@@ -29,7 +34,11 @@ function Layout() {
       const { auth } = store.getState()
       if (!auth.isAuthenticated || isDevForceAuthEnabled()) return
       if (!localStorage.getItem(TOKEN_KEY)) return
-      fetchCurrentUser().catch(() => {})
+      fetchCurrentUser()
+        .then((d) => {
+          if (d?.user) dispatch(setProfile(d.user))
+        })
+        .catch(() => {})
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
@@ -42,6 +51,8 @@ function Layout() {
   const hideFooter =
     /^\/organizations\/?$/.test(location.pathname) ||
     /^\/dashboard\/?$/.test(location.pathname) ||
+    /^\/settings(\/.*)?$/.test(location.pathname) ||
+    /^\/profile\/[^/]+\/?$/.test(location.pathname) ||
     /^\/organizations\/[^/]+\/albums\/[^/]+\/?$/.test(location.pathname)
 
   return (

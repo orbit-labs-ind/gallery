@@ -93,19 +93,19 @@
 .orgs-page__org-icon--v0 {
   background: color-mix(in srgb, var(--accent) 22%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
-  box-shadow: 0 6px 24px var(--glow-pink);
+  box-shadow: none;
 }
 
 .orgs-page__org-icon--v1 {
   background: color-mix(in srgb, var(--accent3) 22%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent3) 48%, transparent);
-  box-shadow: 0 6px 24px var(--glow-blue);
+  box-shadow: none;
 }
 
 .orgs-page__org-icon--v2 {
   background: color-mix(in srgb, var(--accent2) 20%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent2) 45%, transparent);
-  box-shadow: 0 6px 24px color-mix(in srgb, var(--accent2) 22%, transparent);
+  box-shadow: none;
 }
 
 .edit-org-modal__content {
@@ -130,4 +130,105 @@
   background: color-mix(in srgb, var(--text) 6%, transparent) !important;
   border-color: color-mix(in srgb, var(--text) 14%, transparent) !important;
   color: var(--text) !important;
+}
+
+/* Edit org modal — email chips (match create-album member shell) */
+.edit-org-modal__invite-shell {
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.edit-org-modal__invite-shell[data-invalid] {
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.edit-org-modal__email-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 5px 6px 5px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  box-shadow: none;
+}
+
+.edit-org-modal__email-chip-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.edit-org-modal__email-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  margin: 0 -2px 0 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.edit-org-modal__email-chip-remove:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text);
+}
+
+.edit-org-modal__invite-input {
+  flex: 1 1 140px;
+  min-width: 120px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.875rem;
+  padding: 6px 8px;
+  outline: none;
+}
+
+.edit-org-modal__invite-input::placeholder {
+  color: var(--muted);
+}
+
+/* Album summary cards in modal */
+.edit-org-modal__album-card {
+  border-color: color-mix(in srgb, var(--text) 10%, transparent) !important;
+  background: color-mix(in srgb, var(--surface) 70%, transparent) !important;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.edit-org-modal__album-card:hover {
+  border-color: color-mix(in srgb, var(--accent3) 35%, transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent3) 22%, transparent);
+}
+
+.edit-org-modal__album-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent3) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent3) 40%, transparent);
+  color: var(--text);
+  box-shadow: none;
 }

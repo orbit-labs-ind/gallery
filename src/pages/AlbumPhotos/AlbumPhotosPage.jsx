@@ -4,10 +4,10 @@ import {
   useParams,
   useLocation,
 } from 'react-router-dom'
-import { ActionIcon, Menu, Text } from '@mantine/core'
+import { ActionIcon, Button, Menu, Paper, Text } from '@mantine/core'
 import { IoArrowBack } from 'react-icons/io5'
 import { IconDotsVertical, IconPhotoPlus } from '@tabler/icons-react'
-import { getAlbum } from '../../api/organizations'
+import { getAlbum, removeAlbumMember } from '../../api/organizations'
 import { listAlbumPhotos, uploadAlbumPhotoFile } from '../../api/albumPhotos'
 import { fetchCurrentUser } from '../../api/session'
 import { isDevForceAuthEnabled } from '../../store/slices/authSlice'
@@ -64,7 +64,10 @@ function AlbumPhotosPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const locationAlbum = location.state?.album
-  const { refreshAlbums } = useAlbumLibrary()
+  const { refreshAlbums, organizations } = useAlbumLibrary()
+  const orgRowForPage = organizations?.find((o) => String(o.id) === String(orgId))
+  const isOrgOwnerForThisPage = Boolean(orgRowForPage?.isOwner)
+  const canManageAlbumsInOrg = Boolean(orgRowForPage?.myCaps?.canManageAlbums)
 
   const useRemotePhotos = !isDevForceAuthEnabled()
   const totalMock = mockPhotoTotal()
@@ -81,6 +84,7 @@ function AlbumPhotosPage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [uploadError, setUploadError] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [leaveAlbumError, setLeaveAlbumError] = useState(null)
 
   const [viewerOpen, setViewerOpen] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(0)
@@ -155,6 +159,14 @@ function AlbumPhotosPage() {
 
   useEffect(() => {
     if (!useRemotePhotos || !orgId || !albumId || !album) return undefined
+    if (album.hasPhotoAccess === false) {
+      setPhotosLoading(false)
+      setPhotosError(null)
+      setPhotos([])
+      setPhotoTotal(0)
+      remotePagingRef.current = { loading: false, orgId, albumId }
+      return undefined
+    }
     let cancelled = false
     setPhotosLoading(true)
     setPhotosError(null)
@@ -180,7 +192,7 @@ function AlbumPhotosPage() {
     return () => {
       cancelled = true
     }
-  }, [useRemotePhotos, orgId, albumId, album])
+  }, [useRemotePhotos, orgId, albumId, album, album?.hasPhotoAccess])
 
   const loadMoreRemote = useCallback(() => {
     if (!useRemotePhotos || !orgId || !albumId) return
@@ -311,10 +323,61 @@ function AlbumPhotosPage() {
   const canManageAlbum =
     album &&
     userId != null &&
-    String(album.ownerId) === String(userId)
+    (String(album.ownerId) === String(userId) ||
+      isOrgOwnerForThisPage ||
+      canManageAlbumsInOrg)
 
   const canUpload = Boolean(album?.viewerCanUpload)
+  const canLeaveAlbum = Boolean(
+    album?.viewerCanLeaveAlbum && userId != null
+  )
   const effectiveTotal = useRemotePhotos ? photoTotal : totalMock
+
+  const lockedOutOfPhotos =
+    useRemotePhotos &&
+    album &&
+    album.hasPhotoAccess === false &&
+    album.visibility === 'public'
+
+  const handleLeaveAlbum = async () => {
+    if (!orgId || !albumId || !userId) return
+    setLeaveAlbumError(null)
+    const ok = window.confirm(
+      'Leave this album? You will need to be added again to access private content.'
+    )
+    if (!ok) return
+    try {
+      await removeAlbumMember(orgId, albumId, userId)
+      refreshAlbums()
+      navigate('/dashboard')
+    } catch (e) {
+      setLeaveAlbumError(e.message || 'Could not leave album')
+    }
+  }
+
+  const handlePhotoDeleted = useCallback(
+    (photoKey) => {
+      setPhotos((prev) => {
+        const next = prev.filter((p) => p.id !== photoKey)
+        if (next.length === 0) {
+          queueMicrotask(() => {
+            viewerOpenRef.current = false
+            setViewerOpen(false)
+            if (window.history.state?.kind === HISTORY_VIEWER) {
+              window.history.back()
+            }
+          })
+        }
+        return next
+      })
+      setPhotoTotal((t) => Math.max(0, t - 1))
+      refreshAlbums()
+      if (orgId && albumId) {
+        getAlbum(orgId, albumId).then(setAlbum).catch(() => {})
+      }
+    },
+    [orgId, albumId, refreshAlbums]
+  )
   const showEnd =
     photos.length > 0 &&
     photos.length >= effectiveTotal &&
@@ -360,6 +423,11 @@ function AlbumPhotosPage() {
               {uploadError}
             </Text>
           ) : null}
+          {leaveAlbumError ? (
+            <Text size="xs" c="var(--accent2)" mt={4}>
+              {leaveAlbumError}
+            </Text>
+          ) : null}
           {uploading ? (
             <Text size="xs" c="var(--muted)" mt={4}>
               Uploading…
@@ -379,46 +447,51 @@ function AlbumPhotosPage() {
             <IconPhotoPlus size={22} />
           </ActionIcon>
         ) : null}
-        <Menu shadow="md" width={200} position="bottom-end">
-          <Menu.Target>
-            <ActionIcon
-              variant="filled"
-              size="lg"
-              radius="xl"
-              aria-label="Album actions"
-              className="album-photos-page__menu-trigger"
-            >
-              <IconDotsVertical size={20} />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown
-            styles={{
-              dropdown: {
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-              },
-            }}
-          >
-            {canManageAlbum ? (
-              <Menu.Item
-                onClick={() => setSettingsOpen(true)}
-                styles={{
-                  item: { color: 'var(--text)', fontFamily: 'var(--font-body)' },
-                }}
+        {canManageAlbum || canLeaveAlbum ? (
+          <Menu shadow="md" width={220} position="bottom-end">
+            <Menu.Target>
+              <ActionIcon
+                variant="filled"
+                size="lg"
+                radius="xl"
+                aria-label="Album actions"
+                className="album-photos-page__menu-trigger"
               >
-                Album settings
-              </Menu.Item>
-            ) : null}
-            <Menu.Item
-              disabled
+                <IconDotsVertical size={20} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown
               styles={{
-                item: { color: 'var(--muted)', fontFamily: 'var(--font-body)' },
+                dropdown: {
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                },
               }}
             >
-              Share (soon)
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
+              {canManageAlbum ? (
+                <Menu.Item
+                  onClick={() => setSettingsOpen(true)}
+                  styles={{
+                    item: { color: 'var(--text)', fontFamily: 'var(--font-body)' },
+                  }}
+                >
+                  Album settings
+                </Menu.Item>
+              ) : null}
+              {canLeaveAlbum ? (
+                <Menu.Item
+                  color="red"
+                  onClick={handleLeaveAlbum}
+                  styles={{
+                    item: { fontFamily: 'var(--font-body)' },
+                  }}
+                >
+                  Leave album
+                </Menu.Item>
+              ) : null}
+            </Menu.Dropdown>
+          </Menu>
+        ) : null}
       </header>
 
       <div className="album-photos-page__scroll">
@@ -437,12 +510,46 @@ function AlbumPhotosPage() {
           </Text>
         ) : (
           <>
+            {lockedOutOfPhotos ? (
+              <Paper
+                radius="lg"
+                p="xl"
+                mt="md"
+                mx="md"
+                style={{
+                  background: 'color-mix(in srgb, var(--surface) 88%, transparent)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <Text size="sm" style={{ color: 'var(--text)' }} mb="sm">
+                  This album is visible in your organization so people know it exists.
+                  To see photos, the album owner must approve your join request.
+                </Text>
+                {album.shareToken ? (
+                  <Button
+                    radius="md"
+                    variant="light"
+                    className="gallery-theme-btn--albums"
+                    onClick={() =>
+                      navigate(`/join/album/${album.shareToken}`)
+                    }
+                  >
+                    Request access
+                  </Button>
+                ) : (
+                  <Text size="xs" c="dimmed">
+                    Ask the album owner for an invite link.
+                  </Text>
+                )}
+              </Paper>
+            ) : null}
             {useRemotePhotos && photosLoading && photos.length === 0 ? (
               <Text ta="center" c="var(--muted)" py="xl">
                 Loading photos…
               </Text>
             ) : null}
             {useRemotePhotos &&
+            !lockedOutOfPhotos &&
             !photosLoading &&
             photos.length === 0 &&
             !photosError ? (
@@ -462,42 +569,44 @@ function AlbumPhotosPage() {
                 ) : null}
               </div>
             ) : null}
-            <div className="album-photos-page__bento">
-              {photos.map((photo, index) => {
-                const { col, row } = getBentoSpan(
-                  photo.width,
-                  photo.height,
-                  index
-                )
-                const streamPath =
-                  useRemotePhotos && orgId && albumId
-                    ? `/organizations/${orgId}/albums/${albumId}/photos/${encodeURIComponent(photo.id)}/file`
-                    : null
-                return (
-                  <button
-                    key={photo.id}
-                    type="button"
-                    className="album-photos-page__bento-tile"
-                    style={{
-                      gridColumn: `span ${col}`,
-                      gridRow: `span ${row}`,
-                    }}
-                    onClick={() => openViewer(index)}
-                  >
-                    <AuthedAlbumImage
-                      streamPath={streamPath}
-                      variant="thumb"
-                      directSrc={photo.url}
-                      alt=""
-                      width={photo.width}
-                      height={photo.height}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </button>
-                )
-              })}
-            </div>
+            {!lockedOutOfPhotos ? (
+              <div className="album-photos-page__bento">
+                {photos.map((photo, index) => {
+                  const { col, row } = getBentoSpan(
+                    photo.width,
+                    photo.height,
+                    index
+                  )
+                  const streamPath =
+                    useRemotePhotos && orgId && albumId
+                      ? `/organizations/${orgId}/albums/${albumId}/photos/${encodeURIComponent(photo.id)}/file`
+                      : null
+                  return (
+                    <button
+                      key={photo.id}
+                      type="button"
+                      className="album-photos-page__bento-tile"
+                      style={{
+                        gridColumn: `span ${col}`,
+                        gridRow: `span ${row}`,
+                      }}
+                      onClick={() => openViewer(index)}
+                    >
+                      <AuthedAlbumImage
+                        streamPath={streamPath}
+                        variant="thumb"
+                        directSrc={photo.url}
+                        alt=""
+                        width={photo.width}
+                        height={photo.height}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </button>
+                  )
+                })}
+              </div>
+            ) : null}
             <div
               ref={sentinelRef}
               className="album-photos-page__sentinel"
@@ -519,6 +628,7 @@ function AlbumPhotosPage() {
         albumId={albumId}
         albumTitle={title}
         album={album}
+        onPhotoDeleted={handlePhotoDeleted}
       />
 
       <AlbumSettingsModal
@@ -532,6 +642,28 @@ function AlbumPhotosPage() {
             getAlbum(orgId, albumId).then(setAlbum).catch(() => {})
           }
         }}
+        canManageAlbumMembers={Boolean(
+          userId &&
+            album &&
+            (String(album.ownerId) === String(userId) ||
+              isOrgOwnerForThisPage ||
+              canManageAlbumsInOrg)
+        )}
+        canApproveJoinRequests={Boolean(
+          userId &&
+            album &&
+            (String(album.ownerId) === String(userId) ||
+              isOrgOwnerForThisPage ||
+              Boolean(orgRowForPage?.myCaps?.canApproveAlbumRequests))
+        )}
+        canEditAlbum={Boolean(
+          userId &&
+            album &&
+            (String(album.ownerId) === String(userId) ||
+              isOrgOwnerForThisPage ||
+              (Array.isArray(album.coOwnerIds) &&
+                album.coOwnerIds.some((id) => String(id) === String(userId))))
+        )}
       />
     </div>
   )

@@ -3,6 +3,7 @@ import { motion as Motion } from 'framer-motion'
 import { useSwiperSlide } from 'swiper/react'
 import { ActionIcon, Group, Text } from '@mantine/core'
 import { IoSettingsOutline } from 'react-icons/io5'
+import { AuthedAlbumImage } from '../AlbumPhotos/AuthedAlbumImage'
 import './AlbumSlide.css'
 
 export function AlbumSlide({
@@ -50,13 +51,26 @@ export function AlbumSlide({
         className={`dash-slide-img-wrap${isHorizontal ? ' dash-slide-img-wrap--horizontal' : ''}`}
         {...parallaxProps}
       >
-        <img src={album.cover_image} alt={album.title} loading="lazy" />
+        {album.cover_stream_path ? (
+          <AuthedAlbumImage
+            streamPath={album.cover_stream_path}
+            directSrc={album.cover_image}
+            alt={album.title}
+            className="dash-slide-cover-media"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <img src={album.cover_image} alt={album.title} loading="lazy" />
+        )}
       </div>
 
       <div className="dash-slide-scrim" aria-hidden />
 
       {!album.is_accessible && (
-        <span className="dash-slide-lock">Private</span>
+        <span className="dash-slide-lock">
+          {album.visibility === 'public' ? 'Approval required' : 'Private'}
+        </span>
       )}
 
       {showSettings ? (

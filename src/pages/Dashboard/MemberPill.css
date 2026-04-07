@@ -1,9 +1,9 @@
 .member-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   max-width: 100%;
-  padding: 6px 8px 6px 6px;
+  padding: 6px 8px 6px 10px;
   border-radius: 999px;
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.88);
@@ -19,6 +19,16 @@
   border: 1px solid rgba(0, 0, 0, 0.35);
 }
 
+.member-pill__avatar--letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.08);
+  color: #111;
+}
+
 .member-pill__name {
   font-size: 0.78rem;
   font-weight: 600;
@@ -26,7 +36,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
+  max-width: 210px;
 }
 
 .member-pill__remove {

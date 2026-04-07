@@ -1,0 +1,51 @@
+.shared-albums-page {
+  position: relative;
+  min-height: 100%;
+}
+
+.shared-albums-page__blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shared-albums-page__blob--1 {
+  width: 280px;
+  height: 280px;
+  background: #6366f1;
+  top: 10%;
+  right: -40px;
+}
+
+.shared-albums-page__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.shared-albums-page__title {
+  color: var(--text);
+}
+
+.shared-albums-page__subtitle {
+  color: var(--muted);
+}
+
+.shared-albums-page__glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shared-albums-page__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(99, 102, 241, 0.2);
+  color: rgba(199, 210, 254, 0.95);
+  flex-shrink: 0;
+}

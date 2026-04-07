@@ -14,14 +14,20 @@ import 'swiper/css/pagination'
 import 'swiper/css/parallax'
 import '../../common/common.css'
 import './DashboardPage.css'
-import { Box, Button, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { Alert, Box, Button, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { useSelector } from 'react-redux'
 import { IoAdd, IoChevronForward } from 'react-icons/io5'
-import { useAlbumLibrary } from '../../context/AlbumLibraryContext'
+import {
+  useAlbumLibrary,
+  ALBUM_SEGMENTS_WITHOUT_CREATE,
+} from '../../context/AlbumLibraryContext'
 import { isDevForceAuthEnabled } from '../../store/slices/authSlice'
 import { fetchCurrentUser } from '../../api/session'
 import { AlbumSlide } from './AlbumSlide'
 import { AlbumCategorySegment } from './AlbumCategorySegment'
 import { AlbumSettingsModal } from './AlbumSettingsModal'
+
+const PROFILE_NUDGE_LS = 'gallery_profile_nudge_dismissed_v1'
 
 const verticalAlbumSwiperProps = {
   modules: [EffectCoverflow, Keyboard, Mousewheel, Pagination, Parallax],
@@ -53,6 +59,18 @@ const DashboardPage = () => {
   const [userId, setUserId] = useState(null)
   const [settingsAlbum, setSettingsAlbum] = useState(null)
   const navigate = useNavigate()
+  const profile = useSelector((s) => s.currentUser.profile)
+  const [profileNudgeHidden, setProfileNudgeHidden] = useState(() => {
+    try {
+      return localStorage.getItem(PROFILE_NUDGE_LS) === '1'
+    } catch {
+      return false
+    }
+  })
+  const showProfileNudge = Boolean(
+    profile?.needsProfileSetup && !profileNudgeHidden
+  )
+
   const {
     sections: albumSections,
     openCreateAlbum,
@@ -62,7 +80,14 @@ const DashboardPage = () => {
     albumsLoading,
     setActiveAlbumSegmentId,
     refreshAlbums,
+    organizations,
   } = useAlbumLibrary()
+
+  const currentOrgRow = organizations?.find(
+    (o) => String(o.id) === String(currentOrgId)
+  )
+  const isCurrentOrgOwner = Boolean(currentOrgRow?.isOwner)
+  const canManageAlbumsInOrg = Boolean(currentOrgRow?.myCaps?.canManageAlbums)
 
   useEffect(() => {
     if (isDevForceAuthEnabled()) return
@@ -202,6 +227,42 @@ const DashboardPage = () => {
           </Group>
         </Paper>
 
+        {showProfileNudge ? (
+          <Alert
+            color="teal"
+            title="Finish your profile"
+            withCloseButton
+            onClose={() => {
+              try {
+                localStorage.setItem(PROFILE_NUDGE_LS, '1')
+              } catch {
+                /* ignore */
+              }
+              setProfileNudgeHidden(true)
+            }}
+            styles={{
+              root: { background: 'rgba(45, 212, 191, 0.12)', borderColor: 'rgba(45, 212, 191, 0.35)' },
+              title: { color: '#ecfeff' },
+              message: { color: 'rgba(255,255,255,0.85)' },
+            }}
+          >
+            <Text size="sm" c="rgba(255,255,255,0.88)">
+              Add a username and optional details so people in your organization directory can spot
+              you—especially if you share a name with someone else.
+            </Text>
+            <Button
+              component={Link}
+              to="/settings/profile"
+              size="xs"
+              mt="sm"
+              color="teal"
+              variant="light"
+            >
+              Open profile settings
+            </Button>
+          </Alert>
+        ) : null}
+
         <AlbumCategorySegment
           sections={albumSections}
           activeIndex={sectionIndex}
@@ -231,7 +292,8 @@ const DashboardPage = () => {
                       <Text ta="center" c="rgba(255,255,255,0.7)" size="sm" mb="md">
                         No albums in {section.title.toLowerCase()} yet.
                       </Text>
-                      {canCreateAlbum && section.id !== 'joined' ? (
+                      {canCreateAlbum &&
+                      !ALBUM_SEGMENTS_WITHOUT_CREATE.has(section.id) ? (
                         <Button
                           variant="light"
                           color="teal"
@@ -244,6 +306,11 @@ const DashboardPage = () => {
                       ) : section.id === 'joined' ? (
                         <Text size="xs" ta="center" c="dimmed">
                           Albums others share with you appear here.
+                        </Text>
+                      ) : section.id === 'orgPrivateAsOwner' ? (
+                        <Text size="xs" ta="center" c="dimmed">
+                          Private albums in this org you can open as organization
+                          owner.
                         </Text>
                       ) : null}
                     </Box>
@@ -262,7 +329,10 @@ const DashboardPage = () => {
                                 showSettings={
                                   Boolean(
                                     userId &&
-                                      String(album.ownerId) === String(userId)
+                                      (String(album.ownerId) ===
+                                        String(userId) ||
+                                        isCurrentOrgOwner ||
+                                        canManageAlbumsInOrg)
                                   )
                                 }
                                 onOpenSettings={setSettingsAlbum}
@@ -292,6 +362,30 @@ const DashboardPage = () => {
         opened={Boolean(settingsAlbum)}
         onClose={() => setSettingsAlbum(null)}
         onSaved={() => refreshAlbums()}
+        canManageAlbumMembers={Boolean(
+          userId &&
+            settingsAlbum &&
+            (String(settingsAlbum.ownerId) === String(userId) ||
+              isCurrentOrgOwner ||
+              canManageAlbumsInOrg)
+        )}
+        canApproveJoinRequests={Boolean(
+          userId &&
+            settingsAlbum &&
+            (String(settingsAlbum.ownerId) === String(userId) ||
+              isCurrentOrgOwner ||
+              Boolean(currentOrgRow?.myCaps?.canApproveAlbumRequests))
+        )}
+        canEditAlbum={Boolean(
+          userId &&
+            settingsAlbum &&
+            (String(settingsAlbum.ownerId) === String(userId) ||
+              isCurrentOrgOwner ||
+              (Array.isArray(settingsAlbum.coOwnerIds) &&
+                settingsAlbum.coOwnerIds.some(
+                  (id) => String(id) === String(userId)
+                )))
+        )}
       />
     </section>
   )

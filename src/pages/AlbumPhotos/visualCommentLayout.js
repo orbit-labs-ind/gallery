@@ -80,7 +80,10 @@ export function computeVisualCommentPlacements(comments, photoKey, maxShow = 4) 
 }
 
 export function displayCommentAuthor(c) {
-  const e = c.user?.email
+  const u = c.user
+  if (u?.displayName) return u.displayName
+  if (u?.username) return u.username
+  const e = u?.email
   if (!e) return 'Someone'
   const at = e.indexOf('@')
   return at > 0 ? e.slice(0, at) : e

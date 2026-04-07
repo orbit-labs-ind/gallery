@@ -15,8 +15,8 @@
 .dash-seg-scroll__inner {
   display: flex;
   flex-wrap: nowrap;
-  gap: 10px;
-  padding: 4px 2px 8px;
+  gap: 6px;
+  padding: 4px 10px 8px;
   width: max-content;
   min-width: 100%;
 }
@@ -30,7 +30,7 @@
   background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
   padding: 10px 16px;
-  border-radius: 14px;
+  border-radius: 6px;
   font: inherit;
   font-size: 0.8rem;
   font-weight: 600;
@@ -42,6 +42,10 @@
     border-color 0.2s ease,
     background 0.2s ease,
     box-shadow 0.2s ease;
+  backdrop-filter: blur(4px);
+  &:hover {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
 }
 
 .dash-seg-chip:focus,
@@ -70,23 +74,29 @@
 .dash-seg-chip--coral.dash-seg-chip--active {
   border-color: rgba(255, 138, 128, 0.65);
   background: rgba(255, 107, 157, 0.12);
-  box-shadow: 0 0 0 1px rgba(255, 138, 128, 0.2), 0 8px 28px rgba(255, 107, 157, 0.12);
+  box-shadow: none;
 }
 
 .dash-seg-chip--violet.dash-seg-chip--active {
   border-color: rgba(167, 139, 250, 0.65);
   background: rgba(139, 92, 246, 0.14);
-  box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.22), 0 8px 28px rgba(139, 92, 246, 0.12);
+  box-shadow: none;
 }
 
 .dash-seg-chip--teal.dash-seg-chip--active {
   border-color: rgba(45, 212, 191, 0.6);
   background: rgba(20, 184, 166, 0.12);
-  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.2), 0 8px 28px rgba(34, 211, 238, 0.1);
+  box-shadow: none;
 }
 
 .dash-seg-chip--amber.dash-seg-chip--active {
   border-color: rgba(251, 191, 36, 0.65);
   background: rgba(245, 158, 11, 0.12);
-  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.2), 0 8px 28px rgba(245, 158, 11, 0.1);
+  box-shadow: none;
+}
+
+.dash-seg-chip--indigo.dash-seg-chip--active {
+  border-color: rgba(129, 140, 248, 0.65);
+  background: rgba(99, 102, 241, 0.14);
+  box-shadow: none;
 }

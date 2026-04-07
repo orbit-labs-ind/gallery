@@ -14,17 +14,27 @@ import {
 } from '@mantine/core'
 import { AnimatePresence, LayoutGroup } from 'framer-motion'
 import { IoAddOutline, IoImageOutline } from 'react-icons/io5'
-import { MOCK_MEMBERS } from './mockMembers'
+import { getAlbumCreateMemberCandidates } from '../../api/organizations'
+import { AuthedAlbumImage } from '../AlbumPhotos/AuthedAlbumImage'
 import { MemberPill } from './MemberPill'
 import './CreateAlbumDrawer.css'
 
-export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
+function memberAvatarStreamPath(path) {
+  if (!path) return null
+  const joiner = path.includes('?') ? '&' : '?'
+  return `${path}${joiner}size=thumb`
+}
+
+export function CreateAlbumDrawer({ orgId, opened, onClose, onCreateAlbum }) {
   const [name, setName] = useState('')
   const [nameError, setNameError] = useState('')
   const [isPublic, setIsPublic] = useState(false)
   const [description, setDescription] = useState('')
   const [members, setMembers] = useState([])
+  const [orgPickList, setOrgPickList] = useState([])
+  const [candidatesLoading, setCandidatesLoading] = useState(false)
   const [coverPreviewUrl, setCoverPreviewUrl] = useState(null)
+  const [coverFile, setCoverFile] = useState(null)
   const fileRef = useRef(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const didSubmitRef = useRef(false)
@@ -38,9 +48,12 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
       setIsPublic(false)
       setDescription('')
       setMembers([])
+      setOrgPickList([])
+      setCandidatesLoading(false)
       setPickerOpen(false)
       setSubmitting(false)
       setSubmitError('')
+      setCoverFile(null)
       setCoverPreviewUrl((prev) => {
         if (prev && !didSubmitRef.current) URL.revokeObjectURL(prev)
         didSubmitRef.current = false
@@ -49,8 +62,22 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
     }
   }, [opened])
 
+  useEffect(() => {
+    if (!opened || !orgId) {
+      setOrgPickList([])
+      return
+    }
+    setCandidatesLoading(true)
+    getAlbumCreateMemberCandidates(orgId)
+      .then((list) => setOrgPickList(Array.isArray(list) ? list : []))
+      .catch(() => setOrgPickList([]))
+      .finally(() => setCandidatesLoading(false))
+  }, [opened, orgId])
+
   const addMember = (m) => {
-    setMembers((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))
+    setMembers((prev) =>
+      prev.some((x) => String(x.id) === String(m.id)) ? prev : [...prev, m]
+    )
     setPickerOpen(false)
   }
 
@@ -62,6 +89,7 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file || !file.type.startsWith('image/')) return
+    setCoverFile(file)
     setCoverPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
@@ -83,7 +111,7 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
         isPublic,
         description,
         members,
-        coverPreviewUrl,
+        coverFile,
       })
       didSubmitRef.current = true
       onClose()
@@ -94,8 +122,8 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
     }
   }
 
-  const availablePick = MOCK_MEMBERS.filter(
-    (m) => !members.some((sel) => sel.id === m.id)
+  const availablePick = orgPickList.filter(
+    (m) => !members.some((sel) => String(sel.id) === String(m.id))
   )
 
   return (
@@ -184,7 +212,11 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
             <LayoutGroup>
               <AnimatePresence initial={false}>
                 {members.map((m) => (
-                  <MemberPill key={m.id} member={m} onRemove={removeMember} />
+                  <MemberPill
+                    key={m.id}
+                    member={m}
+                    onRemove={removeMember}
+                  />
                 ))}
               </AnimatePresence>
             </LayoutGroup>
@@ -213,9 +245,15 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
                 styles={{ dropdown: { background: '#1a1a22', borderColor: 'rgba(255,255,255,0.12)' } }}
               >
                 <ScrollArea.Autosize mah={240} type="auto">
-                  {availablePick.length === 0 ? (
+                  {candidatesLoading ? (
                     <Text size="sm" c="dimmed" p="xs">
-                      Everyone you can add is already selected.
+                      Loading organization members…
+                    </Text>
+                  ) : availablePick.length === 0 ? (
+                    <Text size="sm" c="dimmed" p="xs">
+                      {orgPickList.length === 0
+                        ? 'No other members in this organization.'
+                        : 'Everyone you can add is already selected.'}
                     </Text>
                   ) : (
                     availablePick.map((m) => (
@@ -223,16 +261,48 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
                         key={m.id}
                         type="button"
                         className="create-album-drawer__member-row"
-                        onClick={() => addMember(m)}
+                        onClick={() =>
+                          addMember({
+                            id: m.id,
+                            name: m.displayName || m.email,
+                            displayName: m.displayName,
+                            email: m.email,
+                            profilePhotoStreamPath: m.profilePhotoStreamPath,
+                          })
+                        }
                       >
-                        <img
-                          src={m.photo}
-                          alt=""
-                          width={32}
-                          height={32}
-                          style={{ borderRadius: '50%', objectFit: 'cover' }}
-                        />
-                        <span>{m.name}</span>
+                        {m.profilePhotoStreamPath ? (
+                          <AuthedAlbumImage
+                            streamPath={memberAvatarStreamPath(m.profilePhotoStreamPath)}
+                            variant="full"
+                            alt=""
+                            className="create-album-drawer__member-avatar"
+                            width={32}
+                            height={32}
+                            style={{
+                              flexShrink: 0,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              minWidth: 32,
+                              minHeight: 32,
+                            }}
+                          />
+                        ) : (
+                          <span
+                            className="create-album-drawer__member-initial"
+                            aria-hidden
+                          >
+                            {(m.displayName || m.email || '?').slice(0, 1).toUpperCase()}
+                          </span>
+                        )}
+                        <span>
+                          {m.displayName || m.email}
+                          {m.username ? (
+                            <Text component="span" size="xs" c="dimmed" display="block">
+                              @{m.username}
+                            </Text>
+                          ) : null}
+                        </span>
                       </button>
                     ))
                   )}
@@ -313,6 +383,7 @@ export function CreateAlbumDrawer({ opened, onClose, onCreateAlbum }) {
                 size="xs"
                 onClick={(e) => {
                   e.stopPropagation()
+                  setCoverFile(null)
                   setCoverPreviewUrl((prev) => {
                     if (prev) URL.revokeObjectURL(prev)
                     return null

@@ -74,3 +74,13 @@ export async function completeAlbumPhoto(orgId, albumId, body) {
   }
   return data
 }
+
+export async function deleteAlbumPhoto(orgId, albumId, photoId) {
+  const path = `/organizations/${orgId}/albums/${albumId}/photos/${encodeURIComponent(photoId)}`
+  const res = await apiFetch(path, { method: 'DELETE' })
+  const data = await parseJsonResponse(res)
+  if (!res.ok) {
+    throw new Error(data.error || 'Could not delete photo')
+  }
+  return data
+}

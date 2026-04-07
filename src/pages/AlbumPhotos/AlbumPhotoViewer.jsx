@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Keyboard, Navigation, Zoom } from 'swiper/modules'
 import {
   ActionIcon,
   Button,
   Drawer,
+  Group,
   Modal,
   Stack,
   Text,
@@ -16,6 +18,7 @@ import {
   IconHeartFilled,
   IconFlag,
   IconMessageCircle,
+  IconTrash,
 } from '@tabler/icons-react'
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -26,6 +29,7 @@ import {
   postPhotoComment,
   submitPhotoReport,
 } from '../../api/albumPhotoEngagement'
+import { deleteAlbumPhoto } from '../../api/albumPhotos'
 import { isDevForceAuthEnabled } from '../../store/slices/authSlice'
 import {
   computeVisualCommentPlacements,
@@ -34,10 +38,35 @@ import {
 import { AuthedAlbumImage } from './AuthedAlbumImage'
 import './AlbumPhotoViewer.css'
 
+function CommentDrawerAuthorRow({ comment: c }) {
+  const u = c.user
+  return (
+    <Group gap={8} wrap="nowrap" align="center">
+      {u?.profilePhotoStreamPath ? (
+        <AuthedAlbumImage
+          streamPath={u.profilePhotoStreamPath}
+          alt=""
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: '50%',
+            objectFit: 'cover',
+            flexShrink: 0,
+          }}
+        />
+      ) : null}
+      <Text size="xs" c="var(--accent3)" fw={600}>
+        {displayCommentAuthor(c)}
+      </Text>
+    </Group>
+  )
+}
+
 function defaultEngagement() {
   return {
     likeCount: 0,
     likedByMe: false,
+    viewerCanDelete: false,
     comments: [],
     reportContext: {
       albumOwner: { id: '', email: 'Album owner' },
@@ -55,6 +84,7 @@ export function AlbumPhotoViewer({
   albumId,
   albumTitle,
   album,
+  onPhotoDeleted,
 }) {
   const swiperRef = useRef(null)
   /** Each photoKey fetched at most once per album session (no API on every swipe). */
@@ -68,6 +98,7 @@ export function AlbumPhotoViewer({
   const [reportDraft, setReportDraft] = useState('')
   const [sendingComment, setSendingComment] = useState(false)
   const [sendingReport, setSendingReport] = useState(false)
+  const [deletingPhoto, setDeletingPhoto] = useState(false)
   const [actionError, setActionError] = useState('')
 
   const useRemote =
@@ -99,6 +130,7 @@ export function AlbumPhotoViewer({
       if (!useRemote) {
         mergeEngagement(key, {
           ...defaultEngagement(),
+          viewerCanDelete: false,
           reportContext: {
             albumOwner: {
               id: album?.ownerId ? String(album.ownerId) : '',
@@ -117,6 +149,7 @@ export function AlbumPhotoViewer({
         mergeEngagement(key, {
           likeCount: data.likeCount ?? 0,
           likedByMe: Boolean(data.likedByMe),
+          viewerCanDelete: Boolean(data.viewerCanDelete),
           comments: Array.isArray(data.comments) ? data.comments : [],
           reportContext: data.reportContext || defaultEngagement().reportContext,
         })
@@ -124,6 +157,7 @@ export function AlbumPhotoViewer({
       } catch {
         mergeEngagement(key, {
           ...defaultEngagement(),
+          viewerCanDelete: false,
           reportContext: {
             albumOwner: {
               id: album?.ownerId ? String(album.ownerId) : '',
@@ -139,6 +173,15 @@ export function AlbumPhotoViewer({
     },
     [album, albumId, mergeEngagement, orgId, useRemote]
   )
+
+  useEffect(() => {
+    if (!opened || photos.length === 0) return
+    if (activeIndex > photos.length - 1) {
+      const next = Math.max(0, photos.length - 1)
+      setActiveIndex(next)
+      requestAnimationFrame(() => swiperRef.current?.slideTo(next, 0))
+    }
+  }, [opened, photos.length, activeIndex])
 
   useEffect(() => {
     engagementLoadedKeysRef.current = new Set()
@@ -258,6 +301,23 @@ export function AlbumPhotoViewer({
       setActionError(err.message || 'Could not post comment')
     } finally {
       setSendingComment(false)
+    }
+  }
+
+  const handleDeletePhoto = async () => {
+    if (!photoKey || !useRemote || !orgId || !albumId) return
+    const ok = window.confirm('Delete this photo permanently? This cannot be undone.')
+    if (!ok) return
+    setDeletingPhoto(true)
+    setActionError('')
+    try {
+      await deleteAlbumPhoto(orgId, albumId, photoKey)
+      engagementLoadedKeysRef.current.delete(photoKey)
+      onPhotoDeleted?.(photoKey)
+    } catch (err) {
+      setActionError(err.message || 'Could not delete photo')
+    } finally {
+      setDeletingPhoto(false)
     }
   }
 
@@ -419,6 +479,18 @@ export function AlbumPhotoViewer({
           <IconFlag size={26} stroke={1.5} />
           <span>Report</span>
         </button>
+        {useRemote && engagement.viewerCanDelete ? (
+          <button
+            type="button"
+            className="album-photo-viewer__action album-photo-viewer__action--delete"
+            onClick={handleDeletePhoto}
+            disabled={deletingPhoto}
+            aria-label="Delete photo"
+          >
+            <IconTrash size={26} stroke={1.5} />
+            <span>Delete</span>
+          </button>
+        ) : null}
       </div>
 
       {actionError ? (
@@ -471,9 +543,18 @@ export function AlbumPhotoViewer({
                     border: '1px solid var(--border)',
                   }}
                 >
-                  <Text size="xs" c="var(--accent3)" fw={600}>
-                    {c.user?.email || 'User'}
-                  </Text>
+                  {c.user?.id ? (
+                    <Link
+                      className="album-photo-viewer__comment-author-link"
+                      to={`/profile/${encodeURIComponent(String(c.user.id))}`}
+                      onClick={() => setCommentsOpen(false)}
+                      aria-label={`View ${displayCommentAuthor(c)}'s profile`}
+                    >
+                      <CommentDrawerAuthorRow comment={c} />
+                    </Link>
+                  ) : (
+                    <CommentDrawerAuthorRow comment={c} />
+                  )}
                   <Text size="sm" c="var(--text)" mt={4}>
                     {c.body}
                   </Text>
