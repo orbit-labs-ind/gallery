@@ -43,6 +43,18 @@ export async function postPhotoComment(orgId, albumId, photoKey, body) {
   return data
 }
 
+export async function deletePhotoComment(orgId, albumId, photoKey, commentId) {
+  const res = await apiFetch(
+    `/organizations/${orgId}/albums/${albumId}/photos/${encKey(photoKey)}/comments/${encodeURIComponent(commentId)}`,
+    { method: 'DELETE' }
+  )
+  const data = await parseJsonResponse(res)
+  if (!res.ok) {
+    throw new Error(data.error || 'Could not delete comment')
+  }
+  return data
+}
+
 export async function submitPhotoReport(orgId, albumId, photoKey, message) {
   const res = await apiFetch(
     `/organizations/${orgId}/albums/${albumId}/photos/${encKey(photoKey)}/report`,

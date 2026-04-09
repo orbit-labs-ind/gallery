@@ -25,3 +25,6 @@ dist-ssr
 package-lock.json
 yarn.lock
 .env
+
+# Firebase messaging SW config (copy from firebase-messaging-config.example.json)
+public/firebase-messaging-config.json

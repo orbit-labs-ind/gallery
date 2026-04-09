@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Keyboard, Navigation, Zoom } from 'swiper/modules'
 import {
@@ -27,10 +28,12 @@ import {
   getPhotoEngagement,
   togglePhotoLike,
   postPhotoComment,
+  deletePhotoComment,
   submitPhotoReport,
 } from '../../api/albumPhotoEngagement'
 import { deleteAlbumPhoto } from '../../api/albumPhotos'
 import { isDevForceAuthEnabled } from '../../store/slices/authSlice'
+import { GALLERY_ENGAGEMENT_EVENT } from '../../hooks/useAlbumEngagementChannel'
 import {
   computeVisualCommentPlacements,
   displayCommentAuthor,
@@ -67,6 +70,7 @@ function defaultEngagement() {
     likeCount: 0,
     likedByMe: false,
     viewerCanDelete: false,
+    viewerCanModerateEngagement: false,
     comments: [],
     reportContext: {
       albumOwner: { id: '', email: 'Album owner' },
@@ -99,7 +103,9 @@ export function AlbumPhotoViewer({
   const [sendingComment, setSendingComment] = useState(false)
   const [sendingReport, setSendingReport] = useState(false)
   const [deletingPhoto, setDeletingPhoto] = useState(false)
+  const [deletingCommentId, setDeletingCommentId] = useState(null)
   const [actionError, setActionError] = useState('')
+  const viewerUserId = useSelector((s) => s.currentUser.profile?.id ?? null)
 
   const useRemote =
     Boolean(orgId && albumId) && !isDevForceAuthEnabled()
@@ -150,6 +156,7 @@ export function AlbumPhotoViewer({
           likeCount: data.likeCount ?? 0,
           likedByMe: Boolean(data.likedByMe),
           viewerCanDelete: Boolean(data.viewerCanDelete),
+          viewerCanModerateEngagement: Boolean(data.viewerCanModerateEngagement),
           comments: Array.isArray(data.comments) ? data.comments : [],
           reportContext: data.reportContext || defaultEngagement().reportContext,
         })
@@ -209,6 +216,21 @@ export function AlbumPhotoViewer({
     if (!opened || !photoKey) return
     loadEngagement(photoKey)
   }, [opened, photoKey, loadEngagement])
+
+  useEffect(() => {
+    if (!opened || !useRemote || !orgId || !albumId || !photoKey) return undefined
+    const onRefresh = (e) => {
+      const d = e.detail
+      if (!d || d.event !== 'engagement_refresh') return
+      if (String(d.organizationId) !== String(orgId)) return
+      if (String(d.albumId) !== String(albumId)) return
+      if (String(d.photoKey) !== String(photoKey)) return
+      engagementLoadedKeysRef.current.delete(photoKey)
+      loadEngagement(photoKey)
+    }
+    window.addEventListener(GALLERY_ENGAGEMENT_EVENT, onRefresh)
+    return () => window.removeEventListener(GALLERY_ENGAGEMENT_EVENT, onRefresh)
+  }, [opened, useRemote, orgId, albumId, photoKey, loadEngagement])
 
   useEffect(() => {
     if (!opened) return undefined
@@ -301,6 +323,23 @@ export function AlbumPhotoViewer({
       setActionError(err.message || 'Could not post comment')
     } finally {
       setSendingComment(false)
+    }
+  }
+
+  const handleDeleteComment = async (commentId) => {
+    if (!photoKey || !useRemote || !commentId) return
+    setDeletingCommentId(commentId)
+    setActionError('')
+    try {
+      await deletePhotoComment(orgId, albumId, photoKey, commentId)
+      const cur = engagementByKey[photoKey] || defaultEngagement()
+      mergeEngagement(photoKey, {
+        comments: cur.comments.filter((c) => String(c.id) !== String(commentId)),
+      })
+    } catch (err) {
+      setActionError(err.message || 'Could not delete comment')
+    } finally {
+      setDeletingCommentId(null)
     }
   }
 
@@ -533,33 +572,55 @@ export function AlbumPhotoViewer({
             }}
           >
             {engagement.comments?.length ? (
-              engagement.comments.map((c) => (
-                <div
-                  key={c.id}
-                  style={{
-                    padding: '10px 12px',
-                    borderRadius: 12,
-                    background: 'var(--surface2)',
-                    border: '1px solid var(--border)',
-                  }}
-                >
-                  {c.user?.id ? (
-                    <Link
-                      className="album-photo-viewer__comment-author-link"
-                      to={`/profile/${encodeURIComponent(String(c.user.id))}`}
-                      onClick={() => setCommentsOpen(false)}
-                      aria-label={`View ${displayCommentAuthor(c)}'s profile`}
-                    >
-                      <CommentDrawerAuthorRow comment={c} />
-                    </Link>
-                  ) : (
-                    <CommentDrawerAuthorRow comment={c} />
-                  )}
-                  <Text size="sm" c="var(--text)" mt={4}>
-                    {c.body}
-                  </Text>
-                </div>
-              ))
+              engagement.comments.map((c) => {
+                const canDeleteComment =
+                  Boolean(viewerUserId) &&
+                  (String(c.user?.id) === String(viewerUserId) ||
+                    engagement.viewerCanModerateEngagement)
+                return (
+                  <div
+                    key={c.id}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 12,
+                      background: 'var(--surface2)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <Group justify="space-between" wrap="nowrap" align="flex-start" gap="xs">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {c.user?.id ? (
+                          <Link
+                            className="album-photo-viewer__comment-author-link"
+                            to={`/profile/${encodeURIComponent(String(c.user.id))}`}
+                            onClick={() => setCommentsOpen(false)}
+                            aria-label={`View ${displayCommentAuthor(c)}'s profile`}
+                          >
+                            <CommentDrawerAuthorRow comment={c} />
+                          </Link>
+                        ) : (
+                          <CommentDrawerAuthorRow comment={c} />
+                        )}
+                        <Text size="sm" c="var(--text)" mt={4}>
+                          {c.body}
+                        </Text>
+                      </div>
+                      {canDeleteComment && useRemote ? (
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          size="sm"
+                          aria-label="Delete comment"
+                          loading={deletingCommentId === c.id}
+                          onClick={() => handleDeleteComment(c.id)}
+                        >
+                          <IconTrash size={18} />
+                        </ActionIcon>
+                      ) : null}
+                    </Group>
+                  </div>
+                )
+              })
             ) : (
               <Text size="sm" c="var(--muted)">
                 No comments yet.

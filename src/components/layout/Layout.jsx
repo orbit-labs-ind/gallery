@@ -10,17 +10,38 @@ import Footer from './Footer'
 import './Layout.css'
 import { hideHeaderFooterRoutes } from '../../common/utils'
 import { AlbumLibraryProvider } from '../../context/AlbumLibraryContext'
+import { useNotificationSocket, GALLERY_NOTIFY_EVENT } from '../../hooks/useNotificationSocket'
+import { registerWebPushIfPossible } from '../../lib/registerWebPush'
+import { presentIncomingNotification } from '../../utils/inAppNotificationAlert'
 
 function Layout() {
   const dispatch = useDispatch()
   const isAuthenticated = useSelector((s) => s.auth.isAuthenticated)
   const location = useLocation()
 
+  useNotificationSocket(isAuthenticated && !isDevForceAuthEnabled())
+
+  useEffect(() => {
+    if (!isAuthenticated || isDevForceAuthEnabled()) return undefined
+    const onBell = (e) => {
+      const n = e.detail
+      if (!n) return
+      presentIncomingNotification({
+        id: n.id,
+        title: n.title,
+        body: n.body,
+      })
+    }
+    window.addEventListener(GALLERY_NOTIFY_EVENT, onBell)
+    return () => window.removeEventListener(GALLERY_NOTIFY_EVENT, onBell)
+  }, [isAuthenticated])
+
   useEffect(() => {
     if (!isAuthenticated || isDevForceAuthEnabled()) return
     fetchCurrentUser()
       .then((d) => {
         if (d?.user) dispatch(setProfile(d.user))
+        registerWebPushIfPossible().catch(() => {})
       })
       .catch(() => {
         /* 401 → logout via apiFetch; ignore network */

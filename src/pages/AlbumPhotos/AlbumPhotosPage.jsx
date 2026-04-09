@@ -3,6 +3,7 @@ import {
   useNavigate,
   useParams,
   useLocation,
+  useSearchParams,
 } from 'react-router-dom'
 import { ActionIcon, Button, Menu, Paper, Text } from '@mantine/core'
 import { IoArrowBack } from 'react-icons/io5'
@@ -17,10 +18,23 @@ import { fetchMockPhotoBatch, mockPhotoTotal } from './mockAlbumPhotos'
 import { getBentoSpan } from './bentoSpans'
 import { AuthedAlbumImage } from './AuthedAlbumImage'
 import { AlbumPhotoViewer } from './AlbumPhotoViewer'
+import { useAlbumEngagementChannel } from '../../hooks/useAlbumEngagementChannel'
+import { AlbumUploadReviewModal } from './AlbumUploadReviewModal'
+import { maybeCompressAlbumPhoto } from '../../utils/clientImageCompress'
 import './AlbumPhotosPage.css'
 
 const HISTORY_VIEWER = 'album-photo-viewer'
 const BATCH = 12
+const DEFAULT_MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+/** Raw picker cap when server asks for client-side compression (GIF always uses server max only). */
+const MAX_RAW_BYTES_WHEN_COMPRESS = 80 * 1024 * 1024
+
+function newLocalId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+}
 
 const ALLOWED_TYPES = [
   'image/jpeg',
@@ -63,6 +77,7 @@ function AlbumPhotosPage() {
   const { orgId, albumId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
   const locationAlbum = location.state?.album
   const { refreshAlbums, organizations } = useAlbumLibrary()
   const orgRowForPage = organizations?.find((o) => String(o.id) === String(orgId))
@@ -70,6 +85,8 @@ function AlbumPhotosPage() {
   const canManageAlbumsInOrg = Boolean(orgRowForPage?.myCaps?.canManageAlbums)
 
   const useRemotePhotos = !isDevForceAuthEnabled()
+
+  useAlbumEngagementChannel(orgId, albumId, Boolean(useRemotePhotos && orgId && albumId))
   const totalMock = mockPhotoTotal()
 
   const [album, setAlbum] = useState(locationAlbum || null)
@@ -84,6 +101,10 @@ function AlbumPhotosPage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [uploadError, setUploadError] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [maxUploadBytes, setMaxUploadBytes] = useState(DEFAULT_MAX_UPLOAD_BYTES)
+  const [clientCompress, setClientCompress] = useState(false)
+  const [uploadReviewOpen, setUploadReviewOpen] = useState(false)
+  const [uploadQueue, setUploadQueue] = useState([])
   const [leaveAlbumError, setLeaveAlbumError] = useState(null)
 
   const [viewerOpen, setViewerOpen] = useState(false)
@@ -100,6 +121,15 @@ function AlbumPhotosPage() {
   const photosLenRef = useRef(0)
   const photoTotalRef = useRef(0)
   const fileInputRef = useRef(null)
+  const uploadQueueRef = useRef(uploadQueue)
+  uploadQueueRef.current = uploadQueue
+  const openedFromPhotoQueryRef = useRef(false)
+
+  useEffect(() => () => {
+    uploadQueueRef.current.forEach((it) => {
+      if (it.previewUrl) URL.revokeObjectURL(it.previewUrl)
+    })
+  }, [])
 
   useEffect(() => {
     photosLenRef.current = photos.length
@@ -116,7 +146,16 @@ function AlbumPhotosPage() {
   useEffect(() => {
     if (isDevForceAuthEnabled()) return
     fetchCurrentUser()
-      .then((d) => setUserId(d.user?.id ?? null))
+      .then((d) => {
+        setUserId(d.user?.id ?? null)
+        const cfg = d.appConfig
+        if (cfg && typeof cfg.maxUploadBytes === 'number') {
+          setMaxUploadBytes(cfg.maxUploadBytes)
+        }
+        if (cfg && typeof cfg.clientCompressMediaBeforeUpload === 'boolean') {
+          setClientCompress(cfg.clientCompressMediaBeforeUpload)
+        }
+      })
       .catch(() => setUserId(null))
   }, [])
 
@@ -240,6 +279,31 @@ function AlbumPhotosPage() {
     window.history.pushState({ kind: HISTORY_VIEWER }, '')
   }, [])
 
+  useEffect(() => {
+    openedFromPhotoQueryRef.current = false
+  }, [orgId, albumId])
+
+  useEffect(() => {
+    if (!useRemotePhotos || photosLoading || photos.length === 0) return
+    const key = searchParams.get('photo')
+    if (!key || openedFromPhotoQueryRef.current) return
+    const decoded = decodeURIComponent(key)
+    const idx = photos.findIndex((p) => p.id === key || p.id === decoded)
+    if (idx < 0) return
+    openedFromPhotoQueryRef.current = true
+    openViewer(idx)
+    const next = new URLSearchParams(searchParams)
+    next.delete('photo')
+    setSearchParams(next, { replace: true })
+  }, [
+    useRemotePhotos,
+    photosLoading,
+    photos,
+    searchParams,
+    setSearchParams,
+    openViewer,
+  ])
+
   const closeViewer = useCallback(() => {
     if (!viewerOpenRef.current) return
     viewerOpenRef.current = false
@@ -275,6 +339,10 @@ function AlbumPhotosPage() {
       if (!contentType) {
         throw new Error(`${file.name}: use JPEG, PNG, WebP, or GIF`)
       }
+      if (file.size > maxUploadBytes) {
+        const mb = (maxUploadBytes / (1024 * 1024)).toFixed(0)
+        throw new Error(`${file.name}: file must be at most ${mb} MB`)
+      }
       const { width, height } = await readImageDimensions(file)
       const { photo } = await uploadAlbumPhotoFile(
         orgId,
@@ -285,35 +353,130 @@ function AlbumPhotosPage() {
       )
       return photo
     },
-    [orgId, albumId]
+    [orgId, albumId, maxUploadBytes]
   )
 
+  const clearUploadQueue = useCallback(() => {
+    setUploadQueue((prev) => {
+      prev.forEach((it) => {
+        if (it.previewUrl) URL.revokeObjectURL(it.previewUrl)
+      })
+      return []
+    })
+  }, [])
+
   const onFileInputChange = useCallback(
-    async (e) => {
+    (e) => {
       const input = e.target
       const files = input.files ? Array.from(input.files) : []
       input.value = ''
       if (!files.length || !orgId || !albumId) return
       setUploadError(null)
-      setUploading(true)
-      try {
-        for (const file of files) {
-          const photo = await uploadSingleFile(file)
-          setPhotos((prev) => [photo, ...prev])
-          setPhotoTotal((t) => t + 1)
+
+      const next = []
+      for (const file of files) {
+        const contentType = pickContentType(file)
+        const id = newLocalId()
+        const previewUrl = URL.createObjectURL(file)
+        if (!contentType) {
+          next.push({
+            id,
+            file,
+            previewUrl,
+            error: 'Use JPEG, PNG, WebP, or GIF',
+          })
+          continue
         }
-        refreshAlbums()
-        if (orgId && albumId) {
-          getAlbum(orgId, albumId).then(setAlbum).catch(() => {})
+        const maxPick =
+          contentType === 'image/gif' || !clientCompress
+            ? maxUploadBytes
+            : MAX_RAW_BYTES_WHEN_COMPRESS
+        if (file.size > maxPick) {
+          const mb = (maxPick / (1024 * 1024)).toFixed(
+            maxPick >= 1024 * 1024 ? 0 : 1
+          )
+          next.push({
+            id,
+            file,
+            previewUrl,
+            error: `Max ${mb} MB per file${
+              clientCompress && contentType !== 'image/gif'
+                ? ' before compression'
+                : ''
+            }`,
+          })
+          continue
         }
-      } catch (err) {
-        setUploadError(err.message || 'Upload failed')
-      } finally {
-        setUploading(false)
+        next.push({ id, file, previewUrl, error: null })
       }
+
+      setUploadQueue((prev) => {
+        prev.forEach((it) => {
+          if (it.previewUrl) URL.revokeObjectURL(it.previewUrl)
+        })
+        return next
+      })
+      setUploadReviewOpen(true)
     },
-    [orgId, albumId, uploadSingleFile, refreshAlbums]
+    [orgId, albumId, maxUploadBytes, clientCompress]
   )
+
+  const removeFromUploadQueue = useCallback((itemId) => {
+    setUploadQueue((prev) => {
+      const it = prev.find((x) => x.id === itemId)
+      if (it?.previewUrl) URL.revokeObjectURL(it.previewUrl)
+      return prev.filter((x) => x.id !== itemId)
+    })
+  }, [])
+
+  const cancelUploadReview = useCallback(() => {
+    if (uploading) return
+    clearUploadQueue()
+    setUploadReviewOpen(false)
+  }, [uploading, clearUploadQueue])
+
+  const confirmUploadReview = useCallback(async () => {
+    const items = uploadQueue.filter((it) => !it.error)
+    if (!items.length || !orgId || !albumId) return
+    setUploadError(null)
+    setUploading(true)
+    try {
+      for (const { file: original } of items) {
+        let file = await maybeCompressAlbumPhoto(original, {
+          enabled: clientCompress,
+          maxUploadBytes,
+        })
+        if (file.size > maxUploadBytes) {
+          const mb = (maxUploadBytes / (1024 * 1024)).toFixed(0)
+          throw new Error(
+            `${file.name}: still over ${mb} MB after compression`
+          )
+        }
+        const photo = await uploadSingleFile(file)
+        setPhotos((prev) => [photo, ...prev])
+        setPhotoTotal((t) => t + 1)
+      }
+      clearUploadQueue()
+      setUploadReviewOpen(false)
+      refreshAlbums()
+      if (orgId && albumId) {
+        getAlbum(orgId, albumId).then(setAlbum).catch(() => {})
+      }
+    } catch (err) {
+      setUploadError(err.message || 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }, [
+    uploadQueue,
+    orgId,
+    albumId,
+    clientCompress,
+    maxUploadBytes,
+    uploadSingleFile,
+    clearUploadQueue,
+    refreshAlbums,
+  ])
 
   const goBackToDashboard = () => {
     navigate('/dashboard')
@@ -618,6 +781,17 @@ function AlbumPhotosPage() {
           </>
         )}
       </div>
+
+      <AlbumUploadReviewModal
+        opened={uploadReviewOpen}
+        onClose={cancelUploadReview}
+        items={uploadQueue}
+        onRemove={removeFromUploadQueue}
+        onConfirm={confirmUploadReview}
+        busy={uploading}
+        maxUploadBytes={maxUploadBytes}
+        clientCompress={clientCompress}
+      />
 
       <AlbumPhotoViewer
         opened={viewerOpen}

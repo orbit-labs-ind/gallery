@@ -16,9 +16,12 @@ import MembershipsSettingsPage from './pages/Settings/MembershipsSettingsPage'
 import ActivitySettingsPage from './pages/Settings/ActivitySettingsPage'
 import DangerSettingsPage from './pages/Settings/DangerSettingsPage'
 import PublicProfilePage from './pages/Profile/PublicProfilePage'
+import NotificationsPage from './pages/Notifications/NotificationsPage'
 import './App.css'
 import '@mantine/core/styles.css'
+import '@mantine/notifications/styles.css'
 import { Switch, createTheme, MantineProvider } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
 
 const theme = createTheme({
   focusRing: 'never',
@@ -58,6 +61,7 @@ const theme = createTheme({
 function App() {
   return (
     <MantineProvider theme={theme}>
+      <Notifications position="top-center" zIndex={10000} limit={4} />
       <Routes>
         <Route path="/" element={<LandingLayout />}>
           <Route index element={<LandingPage />} />
@@ -70,6 +74,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <OrganizationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
               </ProtectedRoute>
             }
           />

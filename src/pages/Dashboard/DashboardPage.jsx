@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import {
   EffectCoverflow,
@@ -71,6 +71,7 @@ const DashboardPage = () => {
     profile?.needsProfileSetup && !profileNudgeHidden
   )
 
+  const [searchParams, setSearchParams] = useSearchParams()
   const {
     sections: albumSections,
     openCreateAlbum,
@@ -81,6 +82,7 @@ const DashboardPage = () => {
     setActiveAlbumSegmentId,
     refreshAlbums,
     organizations,
+    setCurrentOrgId,
   } = useAlbumLibrary()
 
   const currentOrgRow = organizations?.find(
@@ -107,6 +109,49 @@ const DashboardPage = () => {
     const id = albumSections[sectionIndex]?.id
     if (id) setActiveAlbumSegmentId(id)
   }, [sectionIndex, albumSections, setActiveAlbumSegmentId])
+
+  const notifyOrg = searchParams.get('notifyOrg')
+  const openAlbumSettings = searchParams.get('openAlbumSettings')
+
+  useEffect(() => {
+    if (!notifyOrg || !setCurrentOrgId) return
+    if (String(notifyOrg) !== String(currentOrgId)) {
+      setCurrentOrgId(notifyOrg)
+    }
+  }, [notifyOrg, currentOrgId, setCurrentOrgId])
+
+  const albumMatchingOpenSettingsParam = useMemo(() => {
+    if (!openAlbumSettings || albumsLoading) return null
+    const flat = albumSections.flatMap((s) => s.albums || [])
+    return (
+      flat.find((a) => String(a.id) === String(openAlbumSettings)) ?? null
+    )
+  }, [openAlbumSettings, albumsLoading, albumSections])
+
+  const latchedOpenFromUrlRef = useRef(null)
+  if (albumMatchingOpenSettingsParam) {
+    latchedOpenFromUrlRef.current = albumMatchingOpenSettingsParam
+  }
+
+  const settingsModalAlbum =
+    settingsAlbum ?? latchedOpenFromUrlRef.current
+
+  useEffect(() => {
+    if (!albumMatchingOpenSettingsParam || !openAlbumSettings) return
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('openAlbumSettings')
+        next.delete('notifyOrg')
+        return next
+      },
+      { replace: true }
+    )
+  }, [
+    albumMatchingOpenSettingsParam,
+    openAlbumSettings,
+    setSearchParams,
+  ])
 
   const goToSection = (index) => {
     setSectionIndex(index)
@@ -358,31 +403,34 @@ const DashboardPage = () => {
 
       <AlbumSettingsModal
         orgId={currentOrgId}
-        album={settingsAlbum}
-        opened={Boolean(settingsAlbum)}
-        onClose={() => setSettingsAlbum(null)}
+        album={settingsModalAlbum}
+        opened={Boolean(settingsModalAlbum)}
+        onClose={() => {
+          setSettingsAlbum(null)
+          latchedOpenFromUrlRef.current = null
+        }}
         onSaved={() => refreshAlbums()}
         canManageAlbumMembers={Boolean(
           userId &&
-            settingsAlbum &&
-            (String(settingsAlbum.ownerId) === String(userId) ||
+            settingsModalAlbum &&
+            (String(settingsModalAlbum.ownerId) === String(userId) ||
               isCurrentOrgOwner ||
               canManageAlbumsInOrg)
         )}
         canApproveJoinRequests={Boolean(
           userId &&
-            settingsAlbum &&
-            (String(settingsAlbum.ownerId) === String(userId) ||
+            settingsModalAlbum &&
+            (String(settingsModalAlbum.ownerId) === String(userId) ||
               isCurrentOrgOwner ||
               Boolean(currentOrgRow?.myCaps?.canApproveAlbumRequests))
         )}
         canEditAlbum={Boolean(
           userId &&
-            settingsAlbum &&
-            (String(settingsAlbum.ownerId) === String(userId) ||
+            settingsModalAlbum &&
+            (String(settingsModalAlbum.ownerId) === String(userId) ||
               isCurrentOrgOwner ||
-              (Array.isArray(settingsAlbum.coOwnerIds) &&
-                settingsAlbum.coOwnerIds.some(
+              (Array.isArray(settingsModalAlbum.coOwnerIds) &&
+                settingsModalAlbum.coOwnerIds.some(
                   (id) => String(id) === String(userId)
                 )))
         )}

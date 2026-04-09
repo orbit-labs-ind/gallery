@@ -68,3 +68,18 @@ button:focus-visible,
     background-color: #f9f9f9;
   }
 }
+
+@keyframes galleryNotifySlide {
+  from {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gallery-in-app-notify {
+  animation: galleryNotifySlide 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}

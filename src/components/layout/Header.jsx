@@ -9,7 +9,7 @@ import {
   UnstyledButton,
   Indicator,
   Text,
-} from '@mantine/core';
+} from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks';
 import {
   IoNotificationsOutline,
@@ -18,6 +18,7 @@ import {
   IoPersonOutline,
   IoSettingsOutline,
   IoAdd,
+  IoArchiveOutline,
 } from 'react-icons/io5'
 import { logout } from '../../store/slices/authSlice'
 import './Layout.css'
@@ -26,8 +27,15 @@ import {
   useAlbumLibraryOptional,
   ALBUM_SEGMENTS_WITHOUT_CREATE,
 } from '../../context/AlbumLibraryContext'
-import { listNotifications } from '../../api/notifications'
+import {
+  archiveAllNotifications,
+  archiveNotification,
+  listNotifications,
+  markNotificationRead,
+} from '../../api/notifications'
 import { useEffect, useState } from 'react'
+import { notificationTargetPath } from '../../utils/notificationPaths'
+import { GALLERY_NOTIFY_EVENT } from '../../hooks/useNotificationSocket'
 import { AuthedAlbumImage } from '../../pages/AlbumPhotos/AuthedAlbumImage'
 
 function Header() {
@@ -57,10 +65,60 @@ function Header() {
       setNotifications([])
       return
     }
-    listNotifications(12)
+    listNotifications(12, 'active')
       .then(setNotifications)
       .catch(() => setNotifications([]))
   }, [isAuthenticated])
+
+  useEffect(() => {
+    if (!isAuthenticated) return undefined
+    const onPush = (e) => {
+      const n = e.detail
+      if (!n?.id) return
+      setNotifications((prev) => {
+        if (prev.some((x) => String(x.id) === String(n.id))) return prev
+        return [n, ...prev].slice(0, 12)
+      })
+    }
+    window.addEventListener(GALLERY_NOTIFY_EVENT, onPush)
+    return () => window.removeEventListener(GALLERY_NOTIFY_EVENT, onPush)
+  }, [isAuthenticated])
+
+  const handleNotificationClick = async (n) => {
+    try {
+      await markNotificationRead(n.id)
+    } catch {
+      /* navigate anyway */
+    }
+    setNotifications((prev) =>
+      prev.map((x) =>
+        String(x.id) === String(n.id) ? { ...x, readAt: new Date().toISOString() } : x
+      )
+    )
+    const path = notificationTargetPath(n)
+    if (path) navigate(path)
+  }
+
+  const handleArchiveOne = async (e, n) => {
+    e.preventDefault()
+    e.stopPropagation()
+    try {
+      await archiveNotification(n.id)
+      setNotifications((prev) => prev.filter((x) => String(x.id) !== String(n.id)))
+    } catch {
+      /* noop */
+    }
+  }
+
+  const handleArchiveAllMenu = async (e) => {
+    e.preventDefault()
+    try {
+      await archiveAllNotifications()
+      setNotifications([])
+    } catch {
+      /* noop */
+    }
+  }
 
   if (!isAuthenticated) {
     return (
@@ -173,20 +231,71 @@ function Header() {
             </Menu.Target>
 
             <Menu.Dropdown>
-              <Menu.Label>Notifications</Menu.Label>
+              <Group justify="space-between" wrap="nowrap" px="sm" py={6}>
+                <Menu.Label style={{ marginBottom: 0 }}>Notifications</Menu.Label>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  color="gray"
+                  aria-label="Archive all"
+                  title="Archive all"
+                  onClick={handleArchiveAllMenu}
+                >
+                  <IoArchiveOutline size={18} />
+                </ActionIcon>
+              </Group>
+              <Menu.Item
+                component={Link}
+                to="/notifications"
+                style={{ fontSize: 12 }}
+              >
+                View all & history
+              </Menu.Item>
+              <Menu.Divider />
               {notifications.length === 0 ? (
-                <Menu.Item disabled>No notifications yet</Menu.Item>
+                <Menu.Item disabled>No new notifications</Menu.Item>
               ) : (
                 notifications.slice(0, 8).map((n) => (
-                  <Menu.Item key={n.id} style={{ whiteSpace: 'normal', height: 'auto' }}>
-                    <Text size="xs" fw={600} lineClamp={2}>
-                      {n.title}
-                    </Text>
-                    {n.body ? (
-                      <Text size="xs" c="dimmed" lineClamp={2} mt={4}>
-                        {n.body}
-                      </Text>
-                    ) : null}
+                  <Menu.Item
+                    key={n.id}
+                    closeMenuOnClick={false}
+                    style={{ whiteSpace: 'normal', height: 'auto', paddingRight: 36 }}
+                    onClick={() => handleNotificationClick(n)}
+                  >
+                    <Group justify="space-between" wrap="nowrap" gap={6} align="flex-start">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Group gap={6} wrap="nowrap" align="center">
+                          {!n.readAt ? (
+                            <span
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                background: '#2dd4bf',
+                                flexShrink: 0,
+                              }}
+                            />
+                          ) : null}
+                          <Text size="xs" fw={600} lineClamp={2}>
+                            {n.title}
+                          </Text>
+                        </Group>
+                        {n.body ? (
+                          <Text size="xs" c="dimmed" lineClamp={2} mt={4}>
+                            {n.body}
+                          </Text>
+                        ) : null}
+                      </div>
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        color="gray"
+                        aria-label="Archive"
+                        onClick={(ev) => handleArchiveOne(ev, n)}
+                      >
+                        <IoArchiveOutline size={16} />
+                      </ActionIcon>
+                    </Group>
                   </Menu.Item>
                 ))
               )}
