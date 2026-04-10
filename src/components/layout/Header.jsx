@@ -9,6 +9,7 @@ import {
   UnstyledButton,
   Indicator,
   Text,
+  Modal,
 } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks';
 import {
@@ -19,6 +20,7 @@ import {
   IoSettingsOutline,
   IoAdd,
   IoArchiveOutline,
+  IoDownloadOutline,
 } from 'react-icons/io5'
 import { logout } from '../../store/slices/authSlice'
 import './Layout.css'
@@ -37,6 +39,7 @@ import { useEffect, useState } from 'react'
 import { notificationTargetPath } from '../../utils/notificationPaths'
 import { GALLERY_NOTIFY_EVENT } from '../../hooks/useNotificationSocket'
 import { AuthedAlbumImage } from '../../pages/AlbumPhotos/AuthedAlbumImage'
+import { usePwaInstallPrompt } from '../../hooks/usePwaInstallPrompt'
 
 function Header() {
   const { isAuthenticated } = useSelector((state) => state.auth)
@@ -59,6 +62,8 @@ function Header() {
   const setCurrentOrgId = albumLibrary?.setCurrentOrgId
   const [notifications, setNotifications] = useState([])
   const unreadCount = notifications.filter((n) => !n.readAt).length
+  const pwaInstall = usePwaInstallPrompt()
+  const [iosInstallOpen, setIosInstallOpen] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -122,6 +127,7 @@ function Header() {
 
   if (!isAuthenticated) {
     return (
+      <>
       <header className="header-glass">
         <div className="header-glass-inner" style={{
           display: 'flex',
@@ -137,14 +143,33 @@ function Header() {
           </Group>
 
           <Group gap={isMobile ? 'xs' : 'md'} wrap="nowrap">
-            {/* <Button
-              variant="subtle"
-              c="white"
-              size={isMobile ? 'xs' : 'sm'}
-              onClick={() => navigate('/login')}
-            >
-              Sign In
-            </Button> */}
+            {pwaInstall.canUseNativeInstallPrompt ? (
+              <Button
+                variant="outline"
+                color="gray"
+                size={isMobile ? 'xs' : 'sm'}
+                radius="xl"
+                leftSection={<IoDownloadOutline size={16} />}
+                onClick={() => pwaInstall.promptInstall()}
+                c="rgba(255,255,255,0.9)"
+                style={{ borderColor: 'rgba(255,255,255,0.25)' }}
+              >
+                {isMobile ? 'App' : 'Install app'}
+              </Button>
+            ) : null}
+            {pwaInstall.showIosAddToHomeHint ? (
+              <Button
+                variant="outline"
+                color="gray"
+                size={isMobile ? 'xs' : 'sm'}
+                radius="xl"
+                onClick={() => setIosInstallOpen(true)}
+                c="rgba(255,255,255,0.9)"
+                style={{ borderColor: 'rgba(255,255,255,0.25)' }}
+              >
+                {isMobile ? 'Add app' : 'Add to Home Screen'}
+              </Button>
+            ) : null}
             <Button
               variant="light"
               color="pink"
@@ -157,6 +182,21 @@ function Header() {
           </Group>
         </div>
       </header>
+
+      <Modal
+        opened={iosInstallOpen}
+        onClose={() => setIosInstallOpen(false)}
+        title="Install PicPoint"
+        centered
+        overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
+      >
+        <Text size="sm" c="dimmed">
+          On iPhone or iPad, use <strong>Safari</strong>. Tap the <strong>Share</strong> button, then{' '}
+          <strong>Add to Home Screen</strong>. Open PicPoint from the new icon — it runs full screen like a
+          native app (not a browser tab shortcut).
+        </Text>
+      </Modal>
+      </>
     )
   }
 
@@ -211,6 +251,36 @@ function Header() {
               }}
             >
               {isMobile ? 'New' : 'Create album'}
+            </Button>
+          ) : null}
+
+          {pwaInstall.canUseNativeInstallPrompt ? (
+            <Button
+              variant="light"
+              size={isMobile ? 'xs' : 'sm'}
+              radius="xl"
+              leftSection={<IoDownloadOutline size={16} />}
+              onClick={() => pwaInstall.promptInstall()}
+              styles={{
+                root: {
+                  background: 'color-mix(in srgb, var(--accent3) 18%, transparent)',
+                  color: '#fff',
+                  border: '1px solid color-mix(in srgb, var(--accent3) 42%, transparent)',
+                },
+              }}
+            >
+              {isMobile ? 'App' : 'Install app'}
+            </Button>
+          ) : null}
+          {pwaInstall.showIosAddToHomeHint ? (
+            <Button
+              variant="subtle"
+              size={isMobile ? 'xs' : 'sm'}
+              radius="xl"
+              c="rgba(255,255,255,0.85)"
+              onClick={() => setIosInstallOpen(true)}
+            >
+              {isMobile ? 'Add app' : 'Add to Home Screen'}
             </Button>
           ) : null}
 
@@ -383,6 +453,15 @@ function Header() {
                 Settings
               </Menu.Item>
 
+              {pwaInstall.showIosAddToHomeHint ? (
+                <Menu.Item
+                  leftSection={<IoDownloadOutline size={14} />}
+                  onClick={() => setIosInstallOpen(true)}
+                >
+                  Install on this device
+                </Menu.Item>
+              ) : null}
+
               <Menu.Divider />
 
               <Menu.Item
@@ -396,6 +475,20 @@ function Header() {
           </Menu>
         </Group>
       </header>
+
+      <Modal
+        opened={iosInstallOpen}
+        onClose={() => setIosInstallOpen(false)}
+        title="Install PicPoint"
+        centered
+        overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
+      >
+        <Text size="sm" c="dimmed">
+          On iPhone or iPad, use <strong>Safari</strong>. Tap the <strong>Share</strong> button, then{' '}
+          <strong>Add to Home Screen</strong>. Open PicPoint from the new icon — it runs full screen like a
+          native app (not a browser tab shortcut).
+        </Text>
+      </Modal>
     </>
   )
 }

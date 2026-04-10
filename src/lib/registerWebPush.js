@@ -54,7 +54,10 @@ export async function registerWebPushIfPossible() {
     })
   }
 
-  const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+  const existing = await navigator.serviceWorker.getRegistration()
+  const registration =
+    existing ||
+    (await navigator.serviceWorker.register('/sw.js', { scope: '/' }))
 
   let token
   try {

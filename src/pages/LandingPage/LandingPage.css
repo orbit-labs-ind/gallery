@@ -14,7 +14,7 @@ html {
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
-  min-height: 100vh;
+  min-height: 100%;
   overflow-x: hidden;
   width: 100%;
 }

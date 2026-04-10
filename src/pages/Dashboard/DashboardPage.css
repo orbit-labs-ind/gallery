@@ -2,6 +2,8 @@
 .lp-hero.dash-dashboard-hero {
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .dash-expo {

@@ -1,8 +1,8 @@
 .login-page {
   flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  min-height: 100%;
   overflow-x: hidden;
+  overflow-y: visible;
   position: relative;
   display: flex;
   flex-direction: column;

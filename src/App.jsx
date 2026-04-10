@@ -62,93 +62,95 @@ function App() {
   return (
     <MantineProvider theme={theme}>
       <Notifications position="top-center" zIndex={10000} limit={4} />
-      <Routes>
-        <Route path="/" element={<LandingLayout />}>
-          <Route index element={<LandingPage />} />
-          <Route path="login" element={<LoginPage />} />
-        </Route>
-
-        <Route element={<Layout />}>
-          <Route
-            path="organizations"
-            element={
-              <ProtectedRoute>
-                <OrganizationsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="notifications"
-            element={
-              <ProtectedRoute>
-                <NotificationsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="shared-albums"
-            element={
-              <ProtectedRoute>
-                <SharedAlbumsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="join/album/:shareToken"
-            element={
-              <ProtectedRoute>
-                <JoinAlbumPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="join/org-invite"
-            element={
-              <ProtectedRoute>
-                <JoinOrgInvitePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="organizations/:orgId/albums/:albumId"
-            element={
-              <ProtectedRoute>
-                <AlbumPhotosPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="settings"
-            element={
-              <ProtectedRoute>
-                <SettingsLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate to="profile" replace />} />
-            <Route path="profile" element={<ProfileSettingsPage />} />
-            <Route path="memberships" element={<MembershipsSettingsPage />} />
-            <Route path="activity" element={<ActivitySettingsPage />} />
-            <Route path="danger" element={<DangerSettingsPage />} />
+      <div className="app-routes-host">
+        <Routes>
+          <Route path="/" element={<LandingLayout />}>
+            <Route index element={<LandingPage />} />
+            <Route path="login" element={<LoginPage />} />
           </Route>
-          <Route
-            path="profile/:userId"
-            element={
-              <ProtectedRoute>
-                <PublicProfilePage />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-      </Routes>
+
+          <Route element={<Layout />}>
+            <Route
+              path="organizations"
+              element={
+                <ProtectedRoute>
+                  <OrganizationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="shared-albums"
+              element={
+                <ProtectedRoute>
+                  <SharedAlbumsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="join/album/:shareToken"
+              element={
+                <ProtectedRoute>
+                  <JoinAlbumPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="join/org-invite"
+              element={
+                <ProtectedRoute>
+                  <JoinOrgInvitePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="organizations/:orgId/albums/:albumId"
+              element={
+                <ProtectedRoute>
+                  <AlbumPhotosPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="profile" replace />} />
+              <Route path="profile" element={<ProfileSettingsPage />} />
+              <Route path="memberships" element={<MembershipsSettingsPage />} />
+              <Route path="activity" element={<ActivitySettingsPage />} />
+              <Route path="danger" element={<DangerSettingsPage />} />
+            </Route>
+            <Route
+              path="profile/:userId"
+              element={
+                <ProtectedRoute>
+                  <PublicProfilePage />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+        </Routes>
+      </div>
     </MantineProvider>
   )
 }

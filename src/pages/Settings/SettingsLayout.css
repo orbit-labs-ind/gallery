@@ -1,5 +1,5 @@
 .settings-layout {
-  min-height: calc(100vh - 140px);
+  min-height: 0;
   padding: 1rem 1rem 2rem;
 }
 

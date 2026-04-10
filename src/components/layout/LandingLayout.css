@@ -1,7 +1,10 @@
 .landing-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .landing-layout.landing-layout--dark {
@@ -10,8 +13,11 @@
 
 .landing-layout-content {
   flex: 1;
+  min-height: 0;
   padding: 0px;
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Landing page (index route) uses full width – no horizontal padding */
@@ -24,8 +30,9 @@
 .landing-layout-content--login {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
   overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   min-width: 0;
   display: flex;
   flex-direction: column;

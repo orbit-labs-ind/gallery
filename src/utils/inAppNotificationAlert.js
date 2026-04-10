@@ -44,7 +44,7 @@ export function presentIncomingNotification(n) {
     try {
       new Notification(title, {
         body: message || undefined,
-        icon: '/vite.svg',
+        icon: '/pwa-192.png',
         tag: n.id ? String(n.id) : undefined,
       })
     } catch {
